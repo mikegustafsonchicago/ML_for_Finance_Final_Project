@@ -1,27 +1,16 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KORD Linear Regression: Wind Speed Prediction Analysis</title>
-    <link rel="stylesheet" href="../../style.css">
-</head>
-<body>
-    <div class="container">
-        
     <div class="model-report">
-        <h2>KORD Linear Regression: Wind Speed Prediction Analysis</h2>
+        <h2>Wind Speed Prediction Analysis</h2>
         
         <div class="model-description">
             <h3>Model Architecture</h3>
-            <p>This analysis focuses on predicting wind speeds at Chicago O'Hare International Airport (KORD) using historical weather data.</p>
+            <p>This analysis implements a deep neural network model to predict wind speed at Chicago O'Hare International Airport (KORD).</p>
             
-            <h4>Key Implementation Details</h4>
+            <h4>Model Type</h4>
             <ul>
-                <li><strong>Time Window:</strong> 24-hour historical window to capture daily patterns</li>
-                <li><strong>Wind Direction Handling:</strong> Special delta feature to handle circular wind measurements</li>
-                <li><strong>Feature Engineering:</strong> Hourly lags of all weather parameters to capture temporal dependencies</li>
+                <li><strong>Base Model:</strong> Deep Neural Network (PyTorch)</li>
+                <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables</li>
+                <li><strong>Prediction Target:</strong> Next hour's wind speed</li>
             </ul>
             
             <h4>Feature Details</h4>
@@ -31,7 +20,6 @@
                         <tr>
                             <th>Feature Name</th>
                             <th>Description</th>
-                            <th>Units</th>
                             <th>Time Window</th>
                         </tr>
                     </thead>
@@ -39,55 +27,46 @@
                         <tr>
                             <td>Wind Speed</td>
                             <td>Current and historical wind speed measurements</td>
-                            <td>m/s</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Wind Direction</td>
                             <td>Current and historical wind direction measurements</td>
-                            <td>degrees</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Wind Direction Delta</td>
                             <td>Change in wind direction between consecutive hours</td>
-                            <td>degrees</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>Temperature</td>
                             <td>Current and historical temperature measurements</td>
-                            <td>°C</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Humidity</td>
                             <td>Current and historical humidity measurements</td>
-                            <td>%</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Dew Point</td>
                             <td>Current and historical dew point measurements</td>
-                            <td>°C</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Sea Level Pressure</td>
                             <td>Current and historical pressure measurements</td>
-                            <td>hPa</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Visibility</td>
                             <td>Current and historical visibility measurements</td>
-                            <td>km</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Cloud Coverage</td>
                             <td>Current and historical min/max cloud coverage</td>
-                            <td>ft</td>
                             <td>24-hour lag</td>
                         </tr>
                     </tbody>
@@ -98,24 +77,31 @@
             <ul>
                 <li><strong>Train/Test Split:</strong> 80/20</li>
                 <li><strong>Random State:</strong> 42 (for reproducibility)</li>
-                <li><strong>Validation:</strong> Standard train-test split</li>
+                <li><strong>Network Architecture:</strong> 4-layer neural network (128→64→32→1)</li>
+                <li><strong>Activation:</strong> ReLU</li>
+                <li><strong>Dropout:</strong> 0.2</li>
+                <li><strong>Optimizer:</strong> Adam (lr=0.001)</li>
+                <li><strong>Batch Size:</strong> 32</li>
+                <li><strong>Early Stopping:</strong> 10 epochs patience</li>
             </ul>
         </div>
     </div>
     
     <div class="interpretation-section">
         <h3>Model Interpretation</h3>
-        <p>Key findings for wind prediction at KORD:</p>
+        <p>This deep neural network model captures complex non-linear relationships between various weather parameters and wind speed. The model:</p>
         <ul>
-            <li>Wind direction changes provide significant predictive power</li>
-            <li>24-hour historical window captures daily wind patterns</li>
-            <li>Pressure and temperature gradients show strong correlation with wind speed changes</li>
+            <li>Learns hierarchical features through multiple layers</li>
+            <li>Uses dropout for regularization to prevent overfitting</li>
+            <li>Implements early stopping to optimize training duration</li>
+            <li>Provides feature importance based on first layer weights</li>
         </ul>
-        <p>Potential improvements specific to KORD:</p>
+        <p>Future improvements could include:</p>
         <ul>
-            <li>Incorporate runway configuration data</li>
-            <li>Add seasonal interaction terms</li>
-            <li>Include Lake Michigan effect variables</li>
+            <li>LSTM layers to better capture temporal dependencies</li>
+            <li>Hyperparameter tuning using grid search or Bayesian optimization</li>
+            <li>Ensemble methods combining multiple neural network architectures</li>
+            <li>Attention mechanisms to focus on relevant time steps</li>
         </ul>
     </div>
     
@@ -132,15 +118,15 @@
                 <tbody>
                     <tr>
                         <td>Root Mean Squared Error (RMSE)</td>
-                        <td>4.52</td>
+                        <td>6.58</td>
                     </tr>
                     <tr>
                         <td>Mean Absolute Error (MAE)</td>
-                        <td>3.42</td>
+                        <td>5.07</td>
                     </tr>
                     <tr>
                         <td>R² Score</td>
-                        <td>0.70</td>
+                        <td>0.37</td>
                     </tr>
                 </tbody>
             </table>
@@ -150,16 +136,12 @@
         <div class="section">
             <h3>Sample Week Predictions</h3>
             <p>The following plots show the actual vs predicted wind speeds for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\wind_prediction_results.png" alt="Sample Week Predictions">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\4-neural_net_wind_regression_results.png" alt="Sample Week Predictions">
         </div>
         
         <div class="section">
             <h3>Feature Importance</h3>
-            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\feature_importance.png" alt="Feature Importance">
+            <p>This plot shows the top 10 most important features based on their weights in the first layer of the neural network.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\4-neural_net_feature_importance.png" alt="Feature Importance">
         </div>
         
-    </div>
-    
-</body>
-</html>

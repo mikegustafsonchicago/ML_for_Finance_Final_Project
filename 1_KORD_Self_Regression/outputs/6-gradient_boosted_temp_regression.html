@@ -4,26 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KORD Linear Regression: Wind Speed Prediction Analysis</title>
+    <title>KORD Gradient Boosting: Temperature Prediction Analysis</title>
     <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
     <div class="container">
         
     <div class="model-report">
-        <h2>KORD Linear Regression: Wind Speed Prediction Analysis</h2>
-        
+        <h2>KORD Gradient Boosting: Temperature Prediction Analysis</h2>
         <div class="model-description">
             <h3>Model Architecture</h3>
-            <p>This analysis focuses on predicting wind speeds at Chicago O'Hare International Airport (KORD) using historical weather data.</p>
-            
-            <h4>Key Implementation Details</h4>
+            <p>This analysis implements a multivariate time series regression model using XGBoost to predict temperature at Chicago O'Hare International Airport (KORD).</p>
+            <h4>Model Type</h4>
             <ul>
-                <li><strong>Time Window:</strong> 24-hour historical window to capture daily patterns</li>
-                <li><strong>Wind Direction Handling:</strong> Special delta feature to handle circular wind measurements</li>
-                <li><strong>Feature Engineering:</strong> Hourly lags of all weather parameters to capture temporal dependencies</li>
+                <li><strong>Base Model:</strong> XGBoost (Gradient Boosting)</li>
+                <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables</li>
+                <li><strong>Prediction Target:</strong> Next hour's temperature</li>
             </ul>
-            
             <h4>Feature Details</h4>
             <div class="data-list">
                 <table class="feature-table">
@@ -36,6 +33,12 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <tr>
+                            <td>Temperature</td>
+                            <td>Current and historical temperature measurements</td>
+                            <td>°C</td>
+                            <td>24-hour lag</td>
+                        </tr>
                         <tr>
                             <td>Wind Speed</td>
                             <td>Current and historical wind speed measurements</td>
@@ -53,12 +56,6 @@
                             <td>Change in wind direction between consecutive hours</td>
                             <td>degrees</td>
                             <td>Current</td>
-                        </tr>
-                        <tr>
-                            <td>Temperature</td>
-                            <td>Current and historical temperature measurements</td>
-                            <td>°C</td>
-                            <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Humidity</td>
@@ -93,29 +90,32 @@
                     </tbody>
                 </table>
             </div>
-            
             <h4>Training Configuration</h4>
             <ul>
                 <li><strong>Train/Test Split:</strong> 80/20</li>
                 <li><strong>Random State:</strong> 42 (for reproducibility)</li>
-                <li><strong>Validation:</strong> Standard train-test split</li>
+                <li><strong>Validation:</strong> Early stopping with 10 rounds patience</li>
+                <li><strong>Learning Rate:</strong> 0.1</li>
+                <li><strong>Max Depth:</strong> 6</li>
+                <li><strong>Number of Trees:</strong> 100</li>
             </ul>
         </div>
     </div>
     
     <div class="interpretation-section">
         <h3>Model Interpretation</h3>
-        <p>Key findings for wind prediction at KORD:</p>
+        <p>This XGBoost model captures complex non-linear relationships between various weather parameters and temperature. The model:</p>
         <ul>
-            <li>Wind direction changes provide significant predictive power</li>
-            <li>24-hour historical window captures daily wind patterns</li>
-            <li>Pressure and temperature gradients show strong correlation with wind speed changes</li>
+            <li>Learns complex patterns through gradient boosting</li>
+            <li>Automatically handles feature interactions</li>
+            <li>Provides robust feature importance rankings</li>
+            <li>Uses early stopping to prevent overfitting</li>
         </ul>
-        <p>Potential improvements specific to KORD:</p>
+        <p>Future improvements could include:</p>
         <ul>
-            <li>Incorporate runway configuration data</li>
-            <li>Add seasonal interaction terms</li>
-            <li>Include Lake Michigan effect variables</li>
+            <li>Hyperparameter tuning using grid search or Bayesian optimization</li>
+            <li>Feature selection based on importance scores</li>
+            <li>Ensemble methods combining multiple models</li>
         </ul>
     </div>
     
@@ -132,15 +132,15 @@
                 <tbody>
                     <tr>
                         <td>Root Mean Squared Error (RMSE)</td>
-                        <td>4.52</td>
+                        <td>0.80</td>
                     </tr>
                     <tr>
                         <td>Mean Absolute Error (MAE)</td>
-                        <td>3.42</td>
+                        <td>0.54</td>
                     </tr>
                     <tr>
                         <td>R² Score</td>
-                        <td>0.70</td>
+                        <td>0.99</td>
                     </tr>
                 </tbody>
             </table>
@@ -149,14 +149,14 @@
     
         <div class="section">
             <h3>Sample Week Predictions</h3>
-            <p>The following plots show the actual vs predicted wind speeds for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\wind_prediction_results.png" alt="Sample Week Predictions">
+            <p>The following plots show the actual vs predicted temperatures for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\6-gradient_boosted_temp_regression_results.png" alt="Sample Week Predictions">
         </div>
         
         <div class="section">
             <h3>Feature Importance</h3>
-            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\feature_importance.png" alt="Feature Importance">
+            <p>This plot shows the top 10 most important features based on their importance scores in the XGBoost model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\6-gradient_boosted_temp_feature_importance.png" alt="Feature Importance">
         </div>
         
     </div>

@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from pathlib import Path
 import logging
 import sys
-import xgboost as xgb
 sys.path.append('..')  # Add parent directory to path to import html_manager
 from html_manager import HTMLManager
 from Utils.data_formatter import parse_custom_datetime
@@ -107,33 +107,28 @@ def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24):
 
 def train_model(X, y, datetime):
     """
-    Train an XGBoost model
+    Train a random forest regression model
     Returns X_test, y_test, y_pred, datetime_test, metrics
     """
-    logger.info("Training XGBoost model...")
+    logger.info("Training Random Forest model...")
     
     # Split data into train and test sets, keeping indices for datetime alignment
     X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
         X, y, X.index, test_size=0.2, random_state=42
     )
     
-    # Define XGBoost parameters
+    # Define Random Forest parameters
     params = {
-        'objective': 'reg:squarederror',
-        'learning_rate': 0.1,
-        'max_depth': 6,
-        'min_child_weight': 1,
-        'subsample': 0.8,
-        'colsample_bytree': 0.8,
         'n_estimators': 100,
+        'max_depth': 10,
+        'min_samples_split': 5,
+        'min_samples_leaf': 2,
         'random_state': 42
     }
     
     # Train model
-    model = xgb.XGBRegressor(**params)
-    model.fit(
-        X_train, y_train
-    )
+    model = RandomForestRegressor(**params)
+    model.fit(X_train, y_train)
     
     # Make predictions
     y_pred = model.predict(X_test)
@@ -198,7 +193,7 @@ def plot_results(datetime_test, y_test, y_pred, output_dir):
     plt.tight_layout()
 
     # Section-specific plot name
-    plot_path = output_dir / '2-gradient_boosted_wind_regression_results.png'
+    plot_path = output_dir / '3-random_forest_wind_regression_results.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
 
@@ -206,7 +201,7 @@ def plot_results(datetime_test, y_test, y_pred, output_dir):
 
 def plot_feature_importance(feature_importance, output_dir):
     """
-    Plot feature importance based on XGBoost feature importance scores
+    Plot feature importance based on Random Forest feature importance scores
     """
     plt.figure(figsize=(8, 4))
     # Plot top 10 features
@@ -217,7 +212,7 @@ def plot_feature_importance(feature_importance, output_dir):
     plt.tight_layout()
     
     # Section-specific plot name
-    plot_path = output_dir / '2-gradient_boosted_feature_importance.png'
+    plot_path = output_dir / '3-random_forest_feature_importance.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
     
@@ -230,17 +225,17 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     # Create model description section
     model_desc = f"""
     <div class="model-report">
-        <h2>KORD Gradient Boosting: Wind Speed Prediction Analysis</h2>
+        <h2>KORD Random Forest: Wind Speed Prediction Analysis</h2>
         
         <div class="model-description">
             <h3>Model Architecture</h3>
-            <p>This analysis implements a multivariate time series regression model using XGBoost to predict wind speed at Chicago O'Hare International Airport (KORD).</p>
+            <p>This implementation focuses on predicting wind speeds at Chicago O'Hare International Airport (KORD) using time-lagged weather features to capture temporal patterns in wind behavior.</p>
             
-            <h4>Model Type</h4>
+            <h4>Model Configuration</h4>
             <ul>
-                <li><strong>Base Model:</strong> XGBoost (Gradient Boosting)</li>
-                <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables</li>
-                <li><strong>Prediction Target:</strong> Next hour's wind speed</li>
+                <li><strong>Target:</strong> Next hour's wind speed</li>
+                <li><strong>Time Window:</strong> 24-hour historical window for all features</li>
+                <li><strong>Special Features:</strong> Wind direction delta calculation to capture directional changes</li>
             </ul>
             
             <h4>Feature Details</h4>
@@ -317,10 +312,10 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
             <ul>
                 <li><strong>Train/Test Split:</strong> 80/20</li>
                 <li><strong>Random State:</strong> 42 (for reproducibility)</li>
-                <li><strong>Validation:</strong> Early stopping with 10 rounds patience</li>
-                <li><strong>Learning Rate:</strong> 0.1</li>
-                <li><strong>Max Depth:</strong> 6</li>
                 <li><strong>Number of Trees:</strong> 100</li>
+                <li><strong>Max Depth:</strong> 10</li>
+                <li><strong>Min Samples Split:</strong> 5</li>
+                <li><strong>Min Samples Leaf:</strong> 2</li>
             </ul>
         </div>
     </div>
@@ -330,18 +325,17 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     interpretation = f"""
     <div class="interpretation-section">
         <h3>Model Interpretation</h3>
-        <p>This XGBoost model captures complex non-linear relationships between various weather parameters and wind speed. The model:</p>
+        <p>For this specific wind prediction task:</p>
         <ul>
-            <li>Learns complex patterns through gradient boosting</li>
-            <li>Automatically handles feature interactions</li>
-            <li>Provides robust feature importance rankings</li>
-            <li>Uses early stopping to prevent overfitting</li>
+            <li>The 24-hour lag window captures daily wind patterns at O'Hare</li>
+            <li>Wind direction delta helps identify significant weather pattern changes</li>
+            <li>Feature importance reveals which weather parameters most strongly influence wind speed predictions</li>
         </ul>
-        <p>Future improvements could include:</p>
+        <p>Potential improvements specific to KORD:</p>
         <ul>
-            <li>Hyperparameter tuning using grid search or Bayesian optimization</li>
-            <li>Feature selection based on importance scores</li>
-            <li>Ensemble methods combining multiple models</li>
+            <li>Incorporate runway configuration data</li>
+            <li>Add seasonal feature engineering</li>
+            <li>Include regional weather station data</li>
         </ul>
     </div>
     """
@@ -387,7 +381,7 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     feature_importance_section = html_manager.create_section_with_image(
         feature_importance_plot,
         "Feature Importance",
-        "This plot shows the top 10 most important features based on their importance scores in the XGBoost model."
+        "This plot shows the top 10 most important features based on their importance scores in the Random Forest model."
     )
     
     # Combine all sections
@@ -395,11 +389,11 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     
     # Save the HTML file with a distinct, numbered name using the template (links stylesheet)
     html_content = html_manager.template.format(
-        title="KORD Gradient Boosting: Wind Speed Prediction Analysis",
+        title="KORD Random Forest: Wind Speed Prediction Analysis",
         content=content,
         additional_js=""
     )
-    output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, "2-gradient_boosted_wind_regression.html")
+    output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, "3-random_forest_wind_regression.html")
     return html_content, output_path
 
 def main():

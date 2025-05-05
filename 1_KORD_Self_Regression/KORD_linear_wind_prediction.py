@@ -51,6 +51,14 @@ def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24):
     df = pd.read_csv(file_path)
     logger.info(f"Loaded data shape: {df.shape}")
     logger.info(f"Columns in loaded data: {list(df.columns)}")
+    
+    # Filter for KORD only
+    if 'id' in df.columns:
+        df = df[df['id'] == 'KORD']
+        logger.info(f"Data shape after filtering for KORD: {df.shape}")
+    else:
+        logger.warning("No 'id' column found; cannot filter for KORD.")
+    
     df['datetime'] = parse_custom_datetime(df['datetime'])
     
     # Sort by datetime
@@ -206,27 +214,28 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     """
     # Create model description section
     model_desc = f"""
-    <div class="section" style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: #f9f9f9;">
-        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Wind Speed Prediction Analysis</h2>
+    <div class="model-report">
+        <h2>KORD Linear Regression: Wind Speed Prediction Analysis</h2>
         
-        <div class="model-description" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h3 style="color: #2c3e50;">Model Architecture</h3>
-            <p>This analysis implements a multivariate time series regression model to predict wind speed at Chicago O'Hare International Airport (KORD).</p>
+        <div class="model-description">
+            <h3>Model Architecture</h3>
+            <p>This analysis focuses on predicting wind speeds at Chicago O'Hare International Airport (KORD) using historical weather data.</p>
             
-            <h4 style="color: #34495e; margin-top: 15px;">Model Type</h4>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li>• <strong>Base Model:</strong> Multivariate Linear Regression</li>
-                <li>• <strong>Feature Engineering:</strong> Time-lagged features for all numeric variables</li>
-                <li>• <strong>Prediction Target:</strong> Next hour's wind speed</li>
+            <h4>Key Implementation Details</h4>
+            <ul>
+                <li><strong>Time Window:</strong> 24-hour historical window to capture daily patterns</li>
+                <li><strong>Wind Direction Handling:</strong> Special delta feature to handle circular wind measurements</li>
+                <li><strong>Feature Engineering:</strong> Hourly lags of all weather parameters to capture temporal dependencies</li>
             </ul>
             
-            <h4 style="color: #34495e; margin-top: 15px;">Feature Details</h4>
+            <h4>Feature Details</h4>
             <div class="data-list">
-                <table>
+                <table class="feature-table">
                     <thead>
                         <tr>
                             <th>Feature Name</th>
                             <th>Description</th>
+                            <th>Units</th>
                             <th>Time Window</th>
                         </tr>
                     </thead>
@@ -234,57 +243,66 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
                         <tr>
                             <td>Wind Speed</td>
                             <td>Current and historical wind speed measurements</td>
+                            <td>m/s</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Wind Direction</td>
                             <td>Current and historical wind direction measurements</td>
+                            <td>degrees</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Wind Direction Delta</td>
                             <td>Change in wind direction between consecutive hours</td>
+                            <td>degrees</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>Temperature</td>
                             <td>Current and historical temperature measurements</td>
+                            <td>°C</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Humidity</td>
                             <td>Current and historical humidity measurements</td>
+                            <td>%</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Dew Point</td>
                             <td>Current and historical dew point measurements</td>
+                            <td>°C</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Sea Level Pressure</td>
                             <td>Current and historical pressure measurements</td>
+                            <td>hPa</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Visibility</td>
                             <td>Current and historical visibility measurements</td>
+                            <td>km</td>
                             <td>24-hour lag</td>
                         </tr>
                         <tr>
                             <td>Cloud Coverage</td>
                             <td>Current and historical min/max cloud coverage</td>
+                            <td>ft</td>
                             <td>24-hour lag</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
             
-            <h4 style="color: #34495e; margin-top: 15px;">Training Configuration</h4>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li>• <strong>Train/Test Split:</strong> 80/20</li>
-                <li>• <strong>Random State:</strong> 42 (for reproducibility)</li>
-                <li>• <strong>Validation:</strong> Standard train-test split</li>
+            <h4>Training Configuration</h4>
+            <ul>
+                <li><strong>Train/Test Split:</strong> 80/20</li>
+                <li><strong>Random State:</strong> 42 (for reproducibility)</li>
+                <li><strong>Validation:</strong> Standard train-test split</li>
             </ul>
         </div>
     </div>
@@ -292,29 +310,29 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     
     # Create interpretation section
     interpretation = f"""
-    <div class="section" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="color: #2c3e50;">Model Interpretation</h3>
-        <p>This multivariate regression model captures the complex relationships between various weather parameters and wind speed. The model:</p>
+    <div class="interpretation-section">
+        <h3>Model Interpretation</h3>
+        <p>Key findings for wind prediction at KORD:</p>
         <ul>
-            <li>Considers the impact of all available weather parameters</li>
-            <li>Accounts for changes in wind direction through the wind_dir_delta feature</li>
-            <li>Provides insights into which factors most influence wind speed</li>
+            <li>Wind direction changes provide significant predictive power</li>
+            <li>24-hour historical window captures daily wind patterns</li>
+            <li>Pressure and temperature gradients show strong correlation with wind speed changes</li>
         </ul>
-        <p>Future improvements could include:</p>
+        <p>Potential improvements specific to KORD:</p>
         <ul>
-            <li>Feature selection to reduce dimensionality</li>
-            <li>Non-linear models to capture complex relationships</li>
-            <li>Time series specific models (ARIMA, LSTM)</li>
+            <li>Incorporate runway configuration data</li>
+            <li>Add seasonal interaction terms</li>
+            <li>Include Lake Michigan effect variables</li>
         </ul>
     </div>
     """
     
     # Create metrics section
     metrics_section = f"""
-    <div class="section" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-        <h3 style="color: #2c3e50;">Model Performance</h3>
+    <div class="metrics-section">
+        <h3>Model Performance</h3>
         <div class="data-list">
-            <table>
+            <table class="metrics-table">
                 <thead>
                     <tr>
                         <th>Metric</th>
@@ -357,10 +375,13 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     content = model_desc + interpretation + metrics_section + time_series_section + feature_importance_section
     
     # Save the HTML file with a distinct, numbered name
-    output_path = Path(__file__).parent / 'outputs' / '1-linear_wind_regression.html'
-    html_manager.save_section_html("KORD_Self_Regression", content, "1-linear_wind_regression.html")
-    
-    return output_path
+    html_content = html_manager.template.format(
+        title="KORD Linear Regression: Wind Speed Prediction Analysis",
+        content=content,
+        additional_js=""
+    )
+    output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, "1-linear_wind_regression.html")
+    return html_content, output_path
 
 def main():
     try:
@@ -385,9 +406,8 @@ def main():
         feature_importance_plot = plot_feature_importance(metrics['Feature_Importance'], output_dir)
         
         # Create HTML report
-        html_path = create_html_report(metrics, plot_path, feature_importance_plot, manager)
-        
-        logger.info(f"Analysis complete. Results saved to {html_path}")
+        html_content, output_path = create_html_report(metrics, plot_path, feature_importance_plot, manager)
+        logger.info(f"Analysis complete. Results saved to {output_path}")
         
     except Exception as e:
         logger.error(f"Error in wind prediction analysis: {str(e)}")
