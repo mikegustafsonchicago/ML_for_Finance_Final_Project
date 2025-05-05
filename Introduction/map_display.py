@@ -4,14 +4,17 @@ import cartopy.feature as cfeature
 from pathlib import Path
 import logging
 import numpy as np
+import sys
+sys.path.append('..')  # Add parent directory to path to import html_manager
+from html_manager import HTMLManager
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - [%(name)s] - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("map_display")
 
 # Dictionary of ICAO codes and their coordinates (latitude, longitude)
 AIRPORT_COORDS = {
@@ -46,9 +49,14 @@ AIRPORT_COORDS = {
     'KRPJ': (42.2461, -89.5821),  # Rochelle Municipal
 }
 
-def create_airport_map(output_dir):
+def create_airport_map(output_dir, html_manager: HTMLManager = None):
     """Create a static map showing all airports in the Chicago area"""
     logger.info("Creating airport map...")
+    
+    # Initialize HTML manager if not provided
+    if html_manager is None:
+        html_manager = HTMLManager()
+        html_manager.register_section("Introduction", Path(__file__).parent)
     
     # Calculate map bounds (with some padding)
     lats = [coord[0] for coord in AIRPORT_COORDS.values()]
@@ -116,14 +124,22 @@ if __name__ == "__main__":
         output_dir = Path(__file__).parent / 'outputs'
         output_dir.mkdir(exist_ok=True)
         
-        # Create map
-        map_path = create_airport_map(output_dir)
+        # Create HTML manager
+        manager = HTMLManager()
+        manager.register_section("Introduction", Path(__file__).parent)
         
-        # Create standalone HTML
-        from html_combine import create_section_with_image
-        html_path = output_dir / 'map.html'
-        create_section_with_image(map_path, 'Airport Locations', html_path)
-        logger.info(f"Created standalone map at {html_path}")
+        # Create map
+        map_path = create_airport_map(output_dir, manager)
+        
+        # Create HTML section
+        manager.create_section_with_image(
+            map_path,
+            "Airport Locations",
+            "Map showing the locations of all airports in the Chicago area, with a 100-mile radius circle around Chicago.",
+            "map.html"
+        )
+        
+        logger.info("Created airport map section")
         
     except Exception as e:
         logger.error(f"Error creating airport map: {str(e)}")

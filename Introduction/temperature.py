@@ -4,18 +4,26 @@ import logging
 import numpy as np
 import pandas as pd
 from matplotlib.dates import DateFormatter
+import sys
+sys.path.append('..')  # Add parent directory to path to import html_manager
+from html_manager import HTMLManager
 
 # Set up logging
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(asctime)s - [%(name)s] - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("temperature")
 
-def create_temperature_plot(df, output_dir):
+def create_temperature_plot(df, output_dir, html_manager: HTMLManager = None):
     """Create temperature over time plot with separate lines for each airport"""
     logger.info("Creating temperature plot...")
+    
+    # Initialize HTML manager if not provided
+    if html_manager is None:
+        html_manager = HTMLManager()
+        html_manager.register_section("Introduction", Path(__file__).parent)
     
     # Get unique airports and remove ORD (we'll add it to each plot)
     airports = sorted(list(set(df['id'].unique()) - {'KORD'}))
@@ -85,6 +93,10 @@ if __name__ == "__main__":
         output_dir = Path(__file__).parent / 'outputs'
         output_dir.mkdir(exist_ok=True)
         
+        # Create HTML manager
+        manager = HTMLManager()
+        manager.register_section("Introduction", Path(__file__).parent)
+        
         # Read and prepare data
         logger.info("Reading data...")
         df = pd.read_csv('../datastep2.csv')
@@ -96,31 +108,18 @@ if __name__ == "__main__":
         logger.info(f"Date range: {df['datetime'].min()} to {df['datetime'].max()}")
         
         # Create plots
-        plot_paths = create_temperature_plot(df, output_dir)
+        plot_paths = create_temperature_plot(df, output_dir, manager)
         
-        # Create single HTML with all plots
-        from html_combine import create_section_with_image
-        html_content = """
-        <div class="section">
-            <h2>Temperature Analysis</h2>
-            <p>Temperature comparison between O'Hare International Airport (KORD) and other regional airports.</p>
-        """
+        # Create HTML sections for each plot
+        for i, plot_path in enumerate(plot_paths, 1):
+            manager.create_section_with_image(
+                plot_path,
+                f"Temperature Analysis - Group {i}",
+                "Temperature comparison between O'Hare International Airport (KORD) and other regional airports.",
+                f"temperature_group_{i}.html"
+            )
         
-        for i, path in enumerate(plot_paths, 1):
-            html_content += f"""
-            <div class="plot-group">
-                <h3>Group {i}</h3>
-                <img src="{path.name}" alt="Temperature Group {i}" style="max-width: 100%; height: auto;">
-            </div>
-            """
-        
-        html_content += "</div>"
-        
-        html_path = output_dir / 'temperature.html'
-        with open(html_path, 'w') as f:
-            f.write(html_content)
-        
-        logger.info(f"Created temperature analysis at {html_path}")
+        logger.info("Created all temperature analysis sections")
         
     except Exception as e:
         logger.error(f"Error creating temperature plot: {str(e)}")
