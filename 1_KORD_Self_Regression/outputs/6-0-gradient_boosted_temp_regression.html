@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KORD Gradient Boosting: Temperature Prediction Analysis (0)</title>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+    <div class="model-report">
+        <h2>KORD Gradient Boosting: Temperature Prediction Analysis (0)</h2>
+        <div class="model-description">
+            <h3>Model Architecture</h3>
+            <p>This analysis implements a multivariate time series regression model using XGBoost to predict temperature at Chicago O'Hare International Airport (KORD).</p>
+            <h4>Model Type</h4>
+            <ul>
+                <li><strong>Base Model:</strong> XGBoost (Gradient Boosting)</li>
+                <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables, ±2/5 day temp, 5-day rolling avg</li>
+                <li><strong>Prediction Target:</strong> Temperature (0 ahead)</li>
+            </ul>
+            <h4>Feature Details</h4>
+            <div class="data-list">
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th>Feature Name</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                            <th>Time Window</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Temperature</td>
+                            <td>Current, historical, ±2/5 day, and 5-day rolling average temperature</td>
+                            <td>°C</td>
+                            <td>24-hour lag, ±2/5 day, 5-day avg</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Speed</td>
+                            <td>Current and historical wind speed measurements</td>
+                            <td>m/s</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Direction</td>
+                            <td>Current and historical wind direction measurements</td>
+                            <td>degrees</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Direction Delta</td>
+                            <td>Change in wind direction between consecutive hours</td>
+                            <td>degrees</td>
+                            <td>Current</td>
+                        </tr>
+                        <tr>
+                            <td>Humidity</td>
+                            <td>Current and historical humidity measurements</td>
+                            <td>%</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Dew Point</td>
+                            <td>Current and historical dew point measurements</td>
+                            <td>°C</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Sea Level Pressure</td>
+                            <td>Current and historical pressure measurements</td>
+                            <td>hPa</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Visibility</td>
+                            <td>Current and historical visibility measurements</td>
+                            <td>km</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Coverage</td>
+                            <td>Current and historical min/max cloud coverage</td>
+                            <td>ft</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4>Training Configuration</h4>
+            <ul>
+                <li><strong>Train/Test Split:</strong> 80/20</li>
+                <li><strong>Random State:</strong> 42 (for reproducibility)</li>
+                <li><strong>Validation:</strong> Early stopping with 10 rounds patience</li>
+                <li><strong>Learning Rate:</strong> 0.1</li>
+                <li><strong>Max Depth:</strong> 6</li>
+                <li><strong>Number of Trees:</strong> 100</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="interpretation-section">
+        <h3>Model Interpretation</h3>
+        <p>This XGBoost model captures complex non-linear relationships between various weather parameters and temperature. The model:</p>
+        <ul>
+            <li>Learns complex patterns through gradient boosting</li>
+            <li>Automatically handles feature interactions</li>
+            <li>Provides robust feature importance rankings</li>
+            <li>Uses early stopping to prevent overfitting</li>
+        </ul>
+        <p>Future improvements could include:</p>
+        <ul>
+            <li>Hyperparameter tuning using grid search or Bayesian optimization</li>
+            <li>Feature selection based on importance scores</li>
+            <li>Ensemble methods combining multiple models</li>
+        </ul>
+    </div>
+    
+    <div class="metrics-section">
+        <h3>Model Performance</h3>
+        <div class="data-list">
+            <table class="metrics-table">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Root Mean Squared Error (RMSE)</td>
+                        <td>1.32</td>
+                    </tr>
+                    <tr>
+                        <td>Mean Absolute Error (MAE)</td>
+                        <td>0.87</td>
+                    </tr>
+                    <tr>
+                        <td>R² Score</td>
+                        <td>0.99</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+        <div class="section">
+            <h3>Sample Week Predictions (0)</h3>
+            <p>The following plots show the actual vs predicted temperatures for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\6-0-gradient_boosted_temp_regression_results.png" alt="Sample Week Predictions (0)">
+        </div>
+        
+        <div class="section">
+            <h3>Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their importance scores in the XGBoost model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\6-0-gradient_boosted_temp_feature_importance.png" alt="Feature Importance">
+        </div>
+        
+    </div>
+    
+</body>
+</html>
