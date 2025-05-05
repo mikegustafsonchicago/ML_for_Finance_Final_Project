@@ -1,0 +1,55 @@
+=== CHICAGO WEATHER DATASET OVERVIEW ===
+
+BASIC INFORMATION:
+- Total observations: 1,900,862
+- Date range: 2018-01-01 00:00 to 2025-03-31 22:00
+- Typical measurement interval: 0 days 00:00:00
+- Number of parameters: 16
+
+PARAMETERS:
+- id (object)
+- datetime (datetime64[ns])
+- skydescriptor (float64)
+- rain (object)
+- temp_str (float64)
+- temp (float64)
+- windspeed (float64)
+- winddirection (float64)
+- humidity (float64)
+- dew (float64)
+- sealevel (float64)
+- barometric (object)
+- visibility (float64)
+- skycondition (object)
+- mincloud (float64)
+- maxcloud (float64)
+
+DATA QUALITY:
+Missing values by parameter:
+- id: 0 missing (0.0%)
+- datetime: 0 missing (0.0%)
+- skydescriptor: 21 missing (0.0%)
+- rain: 0 missing (0.0%)
+- temp_str: 337 missing (0.0%)
+- temp: 337 missing (0.0%)
+- windspeed: 1,472 missing (0.1%)
+- winddirection: 137 missing (0.0%)
+- humidity: 465 missing (0.0%)
+- dew: 422 missing (0.0%)
+- sealevel: 82 missing (0.0%)
+- barometric: 0 missing (0.0%)
+- visibility: 380 missing (0.0%)
+- skycondition: 0 missing (0.0%)
+- mincloud: 2,977 missing (0.2%)
+- maxcloud: 332,880 missing (17.5%)
+
+STATISTICAL SUMMARY:
+       skydescriptor      temp_str          temp     windspeed  winddirection      humidity           dew      sealevel    visibility      mincloud      maxcloud
+count   1.900841e+06  1.900525e+06  1.900525e+06  1.899390e+06   1.900725e+06  1.900397e+06  1.900440e+06  1.900780e+06  1.900482e+06  1.897885e+06  1.567982e+06
+mean    8.800173e+00  5.980848e+00  1.003432e+01  1.320550e+01   2.037064e+02  7.238193e+01  4.666713e+00  1.016765e+03  1.460291e+01  8.794700e+02  2.910606e+03
+std     7.216855e+00  2.182087e+00  1.133341e+01  8.972094e+00   9.662028e+01  1.856353e+01  1.075668e+01  7.441210e+00  3.634091e+00  1.482339e+03  2.691104e+03
+min     1.000000e+00  1.000000e+00 -3.830000e+01  0.000000e+00   0.000000e+00  2.000000e+00 -4.500000e+01  9.789000e+02  0.000000e+00  0.000000e+00  0.000000e+00
+25%     2.000000e+00  4.000000e+00  1.100000e+00  7.560000e+00   1.300000e+02  5.900000e+01 -3.000000e+00  1.012200e+03  1.609000e+01  2.200000e+01  7.920000e+02
+50%     7.000000e+00  6.000000e+00  1.000000e+01  1.296000e+01   2.300000e+02  7.400000e+01  4.000000e+00  1.016600e+03  1.609000e+01  2.130000e+02  1.829000e+03
+75%     1.600000e+01  8.000000e+00  1.970000e+01  1.836000e+01   2.790000e+02  8.700000e+01  1.400000e+01  1.021300e+03  1.609000e+01  1.158000e+03  3.658000e+03
+max     3.300000e+01  1.200000e+01  3.830000e+01  1.242000e+02   3.560000e+02  1.000000e+02  3.170000e+01  1.048300e+03  3.219000e+01  1.432600e+04  2.953500e+04

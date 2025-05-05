@@ -1,0 +1,91 @@
+/* Import Pico CSS */
+@import url("https://unpkg.com/@picocss/pico@1/css/pico.min.css");
+
+/* Custom styles building on Pico */
+:root {
+  --primary: #1095c1;
+  --primary-hover: #086f93;
+  --font-family: system-ui, -apple-system, "Segoe UI", "Roboto", "Ubuntu",
+    "Cantarell", "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Layout */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+p {
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+th {
+  background: var(--primary);
+  color: white;
+}
+
+tr:nth-child(even) {
+  background: rgba(0,0,0,0.03);
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+/* Plot groups */
+.plot-group {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.plot-group h3 {
+  margin-top: 0;
+}
+
+/* Data lists */
+.data-list {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+}
+
+.column-name {
+  background: var(--primary);
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  margin: 0.2rem;
+  display: inline-block;
+}
+
+/* Section styling */
+.section {
+  margin: 3rem 0;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}

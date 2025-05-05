@@ -1,0 +1,87 @@
+
+    <div class="section" style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: #f9f9f9;">
+        <h2 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;">Wind Speed Prediction Analysis</h2>
+        
+        <div class="model-description" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h3 style="color: #2c3e50;">Model Architecture</h3>
+            <p>This analysis implements a time series regression model to predict wind speed at Chicago O'Hare International Airport (KORD).</p>
+            
+            <h4 style="color: #34495e; margin-top: 15px;">Model Type</h4>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li>• <strong>Base Model:</strong> Linear Regression</li>
+                <li>• <strong>Feature Engineering:</strong> Time-lagged features</li>
+                <li>• <strong>Prediction Target:</strong> Next hour's wind speed</li>
+            </ul>
+            
+            <h4 style="color: #34495e; margin-top: 15px;">Feature Details</h4>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li>• <strong>Input Features:</strong> Previous 24 hours of wind speed measurements</li>
+                <li>• <strong>Feature Window:</strong> Rolling 24-hour window</li>
+                <li>• <strong>Time Resolution:</strong> Hourly measurements</li>
+            </ul>
+            
+            <h4 style="color: #34495e; margin-top: 15px;">Training Configuration</h4>
+            <ul style="list-style-type: none; padding-left: 0;">
+                <li>• <strong>Train/Test Split:</strong> 80/20</li>
+                <li>• <strong>Random State:</strong> 42 (for reproducibility)</li>
+                <li>• <strong>Validation:</strong> Standard train-test split</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="section" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="color: #2c3e50;">Model Interpretation</h3>
+        <p>This basic linear regression model serves as a baseline for wind speed prediction. The model:</p>
+        <ul>
+            <li>Captures the linear relationship between past and future wind speeds</li>
+            <li>Provides a foundation for comparing more complex models</li>
+            <li>Helps identify patterns in wind speed persistence</li>
+        </ul>
+        <p>Future improvements could include:</p>
+        <ul>
+            <li>Incorporating additional weather features (temperature, pressure, etc.)</li>
+            <li>Implementing more sophisticated time series models (ARIMA, LSTM)</li>
+            <li>Adding seasonal decomposition to handle periodic patterns</li>
+        </ul>
+    </div>
+    
+    <div class="section" style="background-color: #fff; padding: 20px; border-radius: 6px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <h3 style="color: #2c3e50;">Model Performance</h3>
+        <div class="metrics-table">
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <tr style="background-color: #f8f9fa;">
+                    <th style="text-align: left; padding: 12px; border-bottom: 2px solid #dee2e6;">Metric</th>
+                    <th style="text-align: right; padding: 12px; border-bottom: 2px solid #dee2e6;">Value</th>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Root Mean Squared Error (RMSE)</td>
+                    <td style="text-align: right; padding: 12px; border-bottom: 1px solid #dee2e6;">5.51</td>
+                </tr>
+                <tr style="background-color: #f8f9fa;">
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">Mean Absolute Error (MAE)</td>
+                    <td style="text-align: right; padding: 12px; border-bottom: 1px solid #dee2e6;">4.28</td>
+                </tr>
+                <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #dee2e6;">R² Score</td>
+                    <td style="text-align: right; padding: 12px; border-bottom: 1px solid #dee2e6;">0.63</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+        <div class="section">
+            <h2>Time Series Prediction</h2>
+            <p>The following plot shows the actual vs predicted wind speeds for the test set. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <div class="plot-group">
+                <img src="wind_prediction_results.png" alt="Time Series Prediction" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Regression Relationship</h2>
+            <p>This plot shows the relationship between current hour's wind speed and next hour's wind speed. The red dashed line represents the linear regression fit.</p>
+            <div class="plot-group">
+                <img src="wind_regression_relationship.png" alt="Regression Relationship" style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+        

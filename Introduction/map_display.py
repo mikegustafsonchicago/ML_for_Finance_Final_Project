@@ -16,37 +16,37 @@ logging.basicConfig(
 )
 logger = logging.getLogger("map_display")
 
-# Dictionary of ICAO codes and their coordinates (latitude, longitude)
+# Dictionary of ICAO codes, names, and their coordinates (latitude, longitude)
 AIRPORT_COORDS = {
-    'KORD': (41.9786, -87.9048),  # Chicago O'Hare
-    'KMDW': (41.7868, -87.7522),  # Chicago Midway
-    'KMKE': (42.9550, -87.8989),  # Milwaukee
-    'KPWK': (42.1142, -87.9015),  # Chicago Executive
-    'KDPA': (41.9078, -88.2486),  # DuPage
-    'KGYY': (41.6163, -87.4128),  # Gary
-    'KRFD': (42.1954, -89.0972),  # Chicago Rockford
-    'KARR': (41.7714, -88.4813),  # Aurora Municipal
-    'KUGN': (42.4222, -87.8679),  # Waukegan
-    'KVPZ': (41.4539, -87.0071),  # Porter County
-    'KJOT': (41.5178, -88.1756),  # Joliet Regional
-    'KIKK': (41.0714, -87.8463),  # Greater Kankakee
-    'KENW': (42.5957, -87.9278),  # Kenosha Regional
-    'KRAC': (42.7612, -87.8137),  # Racine
-    'KBUU': (42.6907, -88.3047),  # Burlington Municipal
-    'KJVL': (42.6199, -89.0416),  # Southern Wisconsin Regional
-    'KDKB': (41.9338, -88.7079),  # DeKalb Taylor Municipal
-    'KRYV': (43.1711, -88.7243),  # Watertown Municipal
-    'KRZL': (43.1156, -90.6825),  # Reedsburg Municipal
-    'KUES': (43.0411, -88.2371),  # Waukesha County
-    'KC09': (41.7433, -88.1216),  # Plainfield
-    'KIGQ': (41.5239, -85.7979),  # Boone County
-    'KLOT': (41.6072, -88.0961),  # Lewis University
-    'KMGC': (41.7033, -86.8219),  # Michigan City Municipal
-    'KMWC': (43.1100, -88.0344),  # Milwaukee-Timmerman
-    'KOXI': (41.3533, -86.9989),  # Starke County
-    'KPNT': (40.9193, -88.6926),  # Pontiac Municipal
-    'KPPO': (42.9097, -89.0326),  # Poplar Grove
-    'KRPJ': (42.2461, -89.5821),  # Rochelle Municipal
+    'KORD': ("Chicago O'Hare", 41.9786, -87.9048),
+    'KMDW': ("Chicago Midway", 41.7868, -87.7522),
+    'KMKE': ("Milwaukee", 42.9550, -87.8989),
+    'KPWK': ("Chicago Executive", 42.1142, -87.9015),
+    'KDPA': ("DuPage", 41.9078, -88.2486),
+    'KGYY': ("Gary", 41.6163, -87.4128),
+    'KRFD': ("Chicago Rockford", 42.1954, -89.0972),
+    'KARR': ("Aurora Municipal", 41.7714, -88.4813),
+    'KUGN': ("Waukegan", 42.4222, -87.8679),
+    'KVPZ': ("Porter County", 41.4539, -87.0071),
+    'KJOT': ("Joliet Regional", 41.5178, -88.1756),
+    'KIKK': ("Greater Kankakee", 41.0714, -87.8463),
+    'KENW': ("Kenosha Regional", 42.5957, -87.9278),
+    'KRAC': ("Racine", 42.7612, -87.8137),
+    'KBUU': ("Burlington Municipal", 42.6907, -88.3047),
+    'KJVL': ("Southern Wisconsin Regional", 42.6199, -89.0416),
+    'KDKB': ("DeKalb Taylor Municipal", 41.9338, -88.7079),
+    'KRYV': ("Watertown Municipal", 43.1711, -88.7243),
+    'KRZL': ("Reedsburg Municipal", 43.1156, -90.6825),
+    'KUES': ("Waukesha County", 43.0411, -88.2371),
+    'KC09': ("Plainfield", 41.7433, -88.1216),
+    'KIGQ': ("Boone County", 41.5239, -85.7979),
+    'KLOT': ("Lewis University", 41.6072, -88.0961),
+    'KMGC': ("Michigan City Municipal", 41.7033, -86.8219),
+    'KMWC': ("Milwaukee-Timmerman", 43.1100, -88.0344),
+    'KOXI': ("Starke County", 41.3533, -86.9989),
+    'KPNT': ("Pontiac Municipal", 40.9193, -88.6926),
+    'KPPO': ("Poplar Grove", 42.9097, -89.0326),
+    'KRPJ': ("Rochelle Municipal", 42.2461, -89.5821),
 }
 
 def create_airport_map(output_dir, html_manager: HTMLManager = None):
@@ -59,8 +59,8 @@ def create_airport_map(output_dir, html_manager: HTMLManager = None):
         html_manager.register_section("Introduction", Path(__file__).parent)
     
     # Calculate map bounds (with some padding)
-    lats = [coord[0] for coord in AIRPORT_COORDS.values()]
-    lons = [coord[1] for coord in AIRPORT_COORDS.values()]
+    lats = [coord[1] for coord in AIRPORT_COORDS.values()]
+    lons = [coord[2] for coord in AIRPORT_COORDS.values()]
     center_lat = np.mean(lats)
     center_lon = np.mean(lons)
     
@@ -83,9 +83,9 @@ def create_airport_map(output_dir, html_manager: HTMLManager = None):
     ax.add_feature(cfeature.LAKES.with_scale('10m'), alpha=0.5)
     
     # Plot airports
-    for icao, coords in AIRPORT_COORDS.items():
-        ax.plot(coords[1], coords[0], 'r^', markersize=8, transform=ccrs.PlateCarree())
-        ax.text(coords[1], coords[0], icao, fontsize=8, 
+    for icao, (name, lat, lon) in AIRPORT_COORDS.items():
+        ax.plot(lon, lat, 'r^', markersize=8, transform=ccrs.PlateCarree())
+        ax.text(lon, lat, icao, fontsize=8, 
                 transform=ccrs.PlateCarree(),
                 horizontalalignment='right',
                 verticalalignment='bottom')
@@ -131,13 +131,25 @@ if __name__ == "__main__":
         # Create map
         map_path = create_airport_map(output_dir, manager)
         
-        # Create HTML section
-        manager.create_section_with_image(
-            map_path,
-            "Airport Locations",
-            "Map showing the locations of all airports in the Chicago area, with a 100-mile radius circle around Chicago.",
-            "map.html"
-        )
+        # Build the HTML table
+        table_html = "<table><tr><th>Code</th><th>Name</th><th>Latitude</th><th>Longitude</th></tr>"
+        for code, (name, lat, lon) in AIRPORT_COORDS.items():
+            table_html += f"<tr><td>{code}</td><td>{name}</td><td>{lat}</td><td>{lon}</td></tr>"
+        table_html += "</table>"
+
+        # Add this table to your HTML section content
+        content_html = f"""
+            <div class="section">
+                <h2>Airport Locations</h2>
+                <p>Map showing the locations of all airports in the Chicago area, with a 100-mile radius circle around Chicago.</p>
+                <div class="plot-group">
+                    <img src="{map_path.name}" alt="Airport Map" style="max-width: 100%; height: auto;">
+                </div>
+                <h3>Airport Table</h3>
+                {table_html}
+            </div>
+        """
+        manager.save_section_html("Introduction", content_html, "map.html")
         
         logger.info("Created airport map section")
         
