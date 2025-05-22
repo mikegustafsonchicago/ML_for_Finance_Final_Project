@@ -79,17 +79,26 @@ def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24):
         ('_lag_48', '_lag_120', 'temp_rolling_5d_avg')))]
     X = df_lagged[feature_cols]
     y_1h = df_lagged['temp'].shift(-1)    # 1 hour ahead
+    y_24h = df_lagged['temp'].shift(-24)  # 24 hours ahead
     y_120h = df_lagged['temp'].shift(-120)  # 120 hours (5 days) ahead
+    
+    # Calculate 5-day and 30-day average targets
+    y_5d_avg = df_lagged['temp'].rolling(window=120, min_periods=1).mean().shift(-120)  # 5-day average ahead
+    y_30d_avg = df_lagged['temp'].rolling(window=720, min_periods=1).mean().shift(-720)  # 30-day average ahead
+    
     datetime = df_lagged['datetime']
 
     # Drop rows where targets are nan (due to shifting)
-    valid_idx = (~y_1h.isna()) & (~y_120h.isna())
+    valid_idx = (~y_1h.isna()) & (~y_24h.isna()) & (~y_120h.isna()) & (~y_5d_avg.isna()) & (~y_30d_avg.isna())
     X = X[valid_idx].reset_index(drop=True)
     y_1h = y_1h[valid_idx].reset_index(drop=True)
+    y_24h = y_24h[valid_idx].reset_index(drop=True)
     y_120h = y_120h[valid_idx].reset_index(drop=True)
+    y_5d_avg = y_5d_avg[valid_idx].reset_index(drop=True)
+    y_30d_avg = y_30d_avg[valid_idx].reset_index(drop=True)
     datetime = datetime[valid_idx].reset_index(drop=True)
 
-    return X, y_1h, y_120h, datetime, feature_cols
+    return X, y_1h, y_24h, y_120h, y_5d_avg, y_30d_avg, datetime, feature_cols
 
 def train_model(X, y, datetime):
     logger.info("Training XGBoost model...")
@@ -135,21 +144,41 @@ def plot_results(datetime_test, y_test, y_pred, output_dir, suffix):
         'actual': y_test,
         'predicted': y_pred
     })
-    start_date = pd.Timestamp('2020-04-01')
-    end_date = pd.Timestamp('2020-04-07 23:59:59')
-    week_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
-    if week_data.empty:
-        logger.warning("No data found for the specified week (April 1-7, 2020).")
+    # Define time windows based on prediction type
+    if suffix == "0":  # 1 hour ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (1 Hour Ahead)"
+    elif suffix == "1":  # 24 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (24 Hours Ahead)"
+    elif suffix == "2":  # 120 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-15 23:59:59')
+        title = "Temperature Prediction: April 1-15, 2020 (5 Days Ahead)"
+    elif suffix == "3":  # 5-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-30 23:59:59')
+        title = "Temperature Prediction: April 2020 (5-Day Average)"
+    else:  # 30-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-05-31 23:59:59')
+        title = "Temperature Prediction: April-May 2020 (30-Day Average)"
+    period_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
+    if period_data.empty:
+        logger.warning(f"No data found for the specified period ({start_date} to {end_date}).")
         return None
-    week_data = week_data.sort_values('datetime')
-    plt.figure(figsize=(10, 4))
-    plt.plot(week_data['datetime'], week_data['actual'], label='Actual', alpha=0.7)
-    plt.plot(week_data['datetime'], week_data['predicted'], label='Predicted', alpha=0.7)
-    plt.title(f'Temperature Prediction ({suffix}): April 1-7, 2020')
+    period_data = period_data.sort_values('datetime')
+    plt.figure(figsize=(12, 6))
+    plt.plot(period_data['datetime'], period_data['actual'], label='Actual', alpha=0.7)
+    plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
+    plt.title(title)
     plt.xlabel('Date')
     plt.ylabel('Temperature (°C)')
     plt.legend()
     plt.xticks(rotation=45)
+    plt.grid(True, alpha=0.3)
     plt.tight_layout()
     plot_path = output_dir / f'6-{suffix}-gradient_boosted_temp_regression_results.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
@@ -168,18 +197,24 @@ def plot_feature_importance(feature_importance, output_dir, suffix):
     plt.close()
     return plot_path
 
-def create_html_report(metrics, plot_path, feature_importance_plot, html_manager, suffix):
-    model_desc = f"""
+def create_html_report(all_results, html_manager):
+    """
+    Create a single HTML report containing all temperature predictions
+    Args:
+        all_results: Dictionary containing results for all prediction types
+        html_manager: HTMLManager instance
+    """
+    model_desc = """
     <div class="model-report">
-        <h2>KORD Gradient Boosting: Temperature Prediction Analysis ({suffix})</h2>
+        <h2>KORD Gradient Boosting: Temperature Prediction Analysis</h2>
         <div class="model-description">
             <h3>Model Architecture</h3>
-            <p>This analysis implements a multivariate time series regression model using XGBoost to predict temperature at Chicago O'Hare International Airport (KORD).</p>
+            <p>This analysis implements multivariate time series regression models using XGBoost to predict temperature at Chicago O'Hare International Airport (KORD) across multiple time horizons.</p>
             <h4>Model Type</h4>
             <ul>
                 <li><strong>Base Model:</strong> XGBoost (Gradient Boosting)</li>
                 <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables, ±2/5 day temp, 5-day rolling avg</li>
-                <li><strong>Prediction Target:</strong> Temperature ({suffix} ahead)</li>
+                <li><strong>Prediction Horizons:</strong> Multiple time windows (1h, 24h, 5d, 5d avg, 30d avg)</li>
             </ul>
             <h4>Feature Details</h4>
             <div class="data-list">
@@ -262,10 +297,71 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
         </div>
     </div>
     """
-    interpretation = f"""
+    
+    # Create sections for each prediction type
+    prediction_sections = []
+    for horizon, results in all_results.items():
+        metrics = results['metrics']
+        plot_path = results['plot_path']
+        feature_importance_plot = results['feature_importance_plot']
+        
+        section = f"""
+        <div class="prediction-section">
+            <h3>{horizon} Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>{metrics['RMSE']:.2f}</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>{metrics['MAE']:.2f}</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>{metrics['R2']:.2f}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        """
+        
+        # Add prediction plot
+        section += html_manager.create_section_with_image(
+            plot_path,
+            f"{horizon} Predictions",
+            "The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions."
+        )
+        
+        # Add feature importance plot
+        section += html_manager.create_section_with_image(
+            feature_importance_plot,
+            f"{horizon} Feature Importance",
+            "This plot shows the top 10 most important features based on their importance scores in the XGBoost model."
+        )
+        
+        section += "</div>"
+        prediction_sections.append(section)
+    
+    # Combine all sections
+    content = model_desc + "\n".join(prediction_sections)
+    
+    # Add interpretation section
+    interpretation = """
     <div class="interpretation-section">
         <h3>Model Interpretation</h3>
-        <p>This XGBoost model captures complex non-linear relationships between various weather parameters and temperature. The model:</p>
+        <p>These XGBoost models capture complex non-linear relationships between various weather parameters and temperature across different time horizons. The models:</p>
         <ul>
             <li>Learns complex patterns through gradient boosting</li>
             <li>Automatically handles feature interactions</li>
@@ -280,56 +376,16 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
         </ul>
     </div>
     """
-    metrics_section = f"""
-    <div class="metrics-section">
-        <h3>Model Performance</h3>
-        <div class="data-list">
-            <table class="metrics-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Root Mean Squared Error (RMSE)</td>
-                        <td>{metrics['RMSE']:.2f}</td>
-                    </tr>
-                    <tr>
-                        <td>Mean Absolute Error (MAE)</td>
-                        <td>{metrics['MAE']:.2f}</td>
-                    </tr>
-                    <tr>
-                        <td>R² Score</td>
-                        <td>{metrics['R2']:.2f}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    """
-    time_series_section = html_manager.create_section_with_image(
-        plot_path,
-        f"Sample Week Predictions ({suffix})",
-        f"The following plots show the actual vs predicted temperatures for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions."
-    )
-    feature_importance_section = html_manager.create_section_with_image(
-        feature_importance_plot,
-        "Feature Importance",
-        "This plot shows the top 10 most important features based on their importance scores in the XGBoost model."
-    )
-    content = model_desc + interpretation + metrics_section + time_series_section + feature_importance_section
+    content += interpretation
+    
     html_content = html_manager.template.format(
-        title=f"KORD Gradient Boosting: Temperature Prediction Analysis ({suffix})",
+        title="KORD Gradient Boosting: Temperature Prediction Analysis",
         content=content,
         additional_js=""
     )
-    output_path = html_manager.save_section_html(
-        "KORD_Self_Regression",
-        html_content,
-        f"6-{suffix}-gradient_boosted_temp_regression.html"
-    )
+    
+    html_filename = "6-gradient_boosted_temp_regression.html"
+    output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, html_filename)
     return html_content, output_path
 
 def main():
@@ -338,23 +394,70 @@ def main():
         output_dir.mkdir(exist_ok=True)
         manager = HTMLManager()
         manager.register_section("KORD_Self_Regression", Path(__file__).parent)
-        X, y_1h, y_120h, datetime, feature_cols = load_and_prepare_data()
-        # 1 hour ahead (6-0)
+        X, y_1h, y_24h, y_120h, y_5d_avg, y_30d_avg, datetime, feature_cols = load_and_prepare_data()
+        
+        # Dictionary to store all results
+        all_results = {}
+        
+        # 1 hour ahead
         model_1h, X_test_1h, y_test_1h, y_pred_1h, datetime_test_1h, metrics_1h = train_model(X, y_1h, datetime)
-        plot_path_1h = plot_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, "0")
-        feature_importance_plot_1h = plot_feature_importance(metrics_1h['Feature_Importance'], output_dir, "0")
-        html_content_1h, output_path_1h = create_html_report(
-            metrics_1h, plot_path_1h, feature_importance_plot_1h, manager, "0"
-        )
-        logger.info(f"1-hour prediction analysis complete. Results saved to {output_path_1h}")
-        # 5 days ahead (6-1)
+        plot_path_1h = plot_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, suffix="0")
+        feature_importance_plot_1h = plot_feature_importance(metrics_1h['Feature_Importance'], output_dir, suffix="0")
+        all_results["1 Hour Ahead"] = {
+            'metrics': metrics_1h,
+            'plot_path': plot_path_1h,
+            'feature_importance_plot': feature_importance_plot_1h
+        }
+        logger.info("1-hour prediction analysis complete")
+        
+        # 24 hours ahead
+        model_24h, X_test_24h, y_test_24h, y_pred_24h, datetime_test_24h, metrics_24h = train_model(X, y_24h, datetime)
+        plot_path_24h = plot_results(datetime_test_24h, y_test_24h, y_pred_24h, output_dir, suffix="1")
+        feature_importance_plot_24h = plot_feature_importance(metrics_24h['Feature_Importance'], output_dir, suffix="1")
+        all_results["24 Hours Ahead"] = {
+            'metrics': metrics_24h,
+            'plot_path': plot_path_24h,
+            'feature_importance_plot': feature_importance_plot_24h
+        }
+        logger.info("24-hour prediction analysis complete")
+        
+        # 120 hours ahead
         model_120h, X_test_120h, y_test_120h, y_pred_120h, datetime_test_120h, metrics_120h = train_model(X, y_120h, datetime)
-        plot_path_120h = plot_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, "1")
-        feature_importance_plot_120h = plot_feature_importance(metrics_120h['Feature_Importance'], output_dir, "1")
-        html_content_120h, output_path_120h = create_html_report(
-            metrics_120h, plot_path_120h, feature_importance_plot_120h, manager, "1"
-        )
-        logger.info(f"5-day prediction analysis complete. Results saved to {output_path_120h}")
+        plot_path_120h = plot_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, suffix="2")
+        feature_importance_plot_120h = plot_feature_importance(metrics_120h['Feature_Importance'], output_dir, suffix="2")
+        all_results["120 Hours (5 Days) Ahead"] = {
+            'metrics': metrics_120h,
+            'plot_path': plot_path_120h,
+            'feature_importance_plot': feature_importance_plot_120h
+        }
+        logger.info("120-hour prediction analysis complete")
+        
+        # 5-day average
+        model_5d_avg, X_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, datetime_test_5d_avg, metrics_5d_avg = train_model(X, y_5d_avg, datetime)
+        plot_path_5d_avg = plot_results(datetime_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, output_dir, suffix="3")
+        feature_importance_plot_5d_avg = plot_feature_importance(metrics_5d_avg['Feature_Importance'], output_dir, suffix="3")
+        all_results["5-Day Average Ahead"] = {
+            'metrics': metrics_5d_avg,
+            'plot_path': plot_path_5d_avg,
+            'feature_importance_plot': feature_importance_plot_5d_avg
+        }
+        logger.info("5-day average prediction analysis complete")
+        
+        # 30-day average
+        model_30d_avg, X_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, datetime_test_30d_avg, metrics_30d_avg = train_model(X, y_30d_avg, datetime)
+        plot_path_30d_avg = plot_results(datetime_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, output_dir, suffix="4")
+        feature_importance_plot_30d_avg = plot_feature_importance(metrics_30d_avg['Feature_Importance'], output_dir, suffix="4")
+        all_results["30-Day Average Ahead"] = {
+            'metrics': metrics_30d_avg,
+            'plot_path': plot_path_30d_avg,
+            'feature_importance_plot': feature_importance_plot_30d_avg
+        }
+        logger.info("30-day average prediction analysis complete")
+        
+        # Create single HTML report with all results
+        html_content, output_path = create_html_report(all_results, manager)
+        logger.info(f"All temperature prediction analyses complete. Results saved to {output_path}")
+        
     except Exception as e:
         logger.error(f"Error in temperature prediction analysis: {str(e)}")
         raise

@@ -7,6 +7,7 @@ import numpy as np
 import sys
 sys.path.append('..')  # Add parent directory to path to import html_manager
 from html_manager import HTMLManager
+from Utils.latex_utility import save_latex_file, latex_section, df_to_latex_table
 
 # Set up logging
 logging.basicConfig(
@@ -50,7 +51,7 @@ AIRPORT_COORDS = {
 }
 
 def create_airport_map(output_dir, html_manager: HTMLManager = None):
-    """Create a static map showing all airports in the Chicago area"""
+    """Create a static map showing all airports in the Chicago area, and output both HTML and LaTeX."""
     logger.info("Creating airport map...")
     
     # Initialize HTML manager if not provided
@@ -141,6 +142,30 @@ def create_airport_map(output_dir, html_manager: HTMLManager = None):
     
     manager.save_section_html("Introduction", content_html, "map.html")
     logger.info(f"Airport map created: {output_path}")
+
+    # --- LaTeX Output ---
+    import pandas as pd
+    airport_df = pd.DataFrame([
+        {'Code': code, 'Name': name, 'Latitude': lat, 'Longitude': lon}
+        for code, (name, lat, lon) in AIRPORT_COORDS.items()
+    ])
+    latex_content = latex_section(
+        "Airport Locations",
+        "Map showing the locations of all airports in the Chicago area, with a 100-mile radius circle around Chicago."
+    )
+    latex_content += r"\begin{figure}[htbp]" + "\n" + \
+        r"\centering" + "\n" + \
+        f"\includegraphics[width=0.7\textwidth]{{{output_path.name}}}" + "\n" + \
+        r"\caption{Chicago Area Airports}" + "\n" + \
+        r"\label{fig:airport_map}" + "\n" + \
+        r"\end{figure}" + "\n"
+    latex_content += latex_section(
+        "Airport Table",
+        df_to_latex_table(airport_df, caption="Airport Table", label="tab:airport_table")
+    )
+    latex_output_path = output_dir / 'map.tex'
+    save_latex_file(latex_content, latex_output_path)
+    logger.info(f"LaTeX airport map created: {latex_output_path}")
     return output_path
 
 def create_airport_table():

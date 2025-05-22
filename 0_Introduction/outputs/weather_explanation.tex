@@ -1,0 +1,75 @@
+\section{Understanding Weather Data}
+This dataset contains detailed weather observations from airports in the Chicago area, recorded in a special format called METAR (Meteorological Aerodrome Report). METAR is the international standard code format for hourly weather observations used by meteorologists, pilots, and aviation professionals worldwide. These reports are typically issued every hour, providing a snapshot of current weather conditions at airports.
+\subsection{What is METAR Data?}
+METAR reports follow a standardized format that includes:\begin{itemize}
+  \item Time: Observations are typically taken every hour, on the hour
+  \item Location: Each report is tagged with a unique identifier for the airport
+  \item Weather Elements: Temperature, wind, visibility, cloud cover, and other conditions
+  \item Special Conditions: Any significant weather phenomena like rain, snow, or fog
+\end{itemize}
+This standardization ensures that weather information can be quickly understood and used by aviation professionals worldwide, regardless of language barriers.
+\subsection{Basic Weather Measurements}
+\subsection{Temperature and Dew Point}
+Temperature measurements in this dataset are recorded in Celsius (	extdegree C):\begin{itemize}
+  \item Temperature (temp): The actual air temperature, ranging from -38.3	extdegree C to 38.3	extdegree C in our dataset. This is measured at a standard height of 2 meters above ground level.
+  \item Dew Point (dew): The temperature at which water vapor in the air would start to condense into liquid water. When the temperature and dew point are close, it indicates high humidity and possible fog formation. In our data, dew points range from -45	extdegree C to 31.7	extdegree C.
+\end{itemize}
+To convert to Fahrenheit: multiply by 1.8 and add 32.
+\subsection{Wind Measurements}
+Wind is described by two main components:\begin{itemize}
+  \item Wind Speed (windspeed): Measured in knots (1 knot = 1.15 mph). In our dataset, wind speeds range from 0 to 124.2 knots, with an average of 13.2 knots. This is measured at a standard height of 10 meters above ground level.
+  \item Wind Direction (winddirection): Measured in degrees from true north (0	extdegree = North, 90	extdegree = East, 180	extdegree = South, 270	extdegree = West). Our data shows directions ranging from 0	extdegree to 356	extdegree, with an average of 203.7	extdegree (southwest).
+\end{itemize}
+
+\subsection{Humidity and Pressure}
+These measurements help us understand the moisture content and air pressure:\begin{itemize}
+  \item Humidity (humidity): Measured as a percentage (0-100%). Our data shows humidity ranging from 2\% to 100\%, with an average of 72.4\%. This indicates the amount of water vapor in the air compared to the maximum possible at that temperature.
+  \item Sea Level Pressure (sealevel): Measured in millibars (mb), ranging from 978.9 to 1048.3 mb in our dataset. This is the atmospheric pressure adjusted to sea level, which helps in comparing pressure readings from different altitudes.
+  \item Barometric Tendency (barometric): Shows if the pressure is rising (R), falling (F), or steady (S). This helps predict weather changes, as falling pressure often indicates approaching storms.
+\end{itemize}
+
+
+\subsection{Sky Conditions}
+\subsection{Cloud Cover and Height}
+The sky conditions are described using standardized terms and measurements:\begin{itemize}
+  \item Sky Descriptor (skydescriptor): A numerical code (1-33) that describes the overall sky condition. Our data shows values ranging from 1 to 33, with an average of 8.8.
+  \item Cloud Heights (mincloud, maxcloud): Measured in meters above ground level: Minimum cloud height (mincloud): Ranges from 0 to 14,326 meters; Maximum cloud height (maxcloud): Ranges from 0 to 29,535 meters.
+  \item Sky Condition (skycondition): Describes the cloud coverage using standard terms:\begin{itemize}
+  \item Clear (C): No clouds
+  \item Few (F): 1-2/8 of the sky covered
+  \item Scattered (S): 3-4/8 of the sky covered
+  \item Broken (B): 5-7/8 of the sky covered
+  \item Overcast (O): 8/8 of the sky covered
+  \item Obscured (X): Sky is hidden by fog, smoke, etc.
+\end{itemize}
+
+\end{itemize}
+
+
+\subsection{Weather Phenomena}
+\subsection{Precipitation and Weather Types}
+The data includes various types of weather conditions, recorded using standard METAR codes:\begin{itemize}
+  \item Rain (RA): Liquid precipitation
+  \item Snow (SN): Frozen precipitation
+  \item Thunderstorms (TS): Storms with lightning and thunder
+  \item Fog (FG): Reduced visibility due to water droplets in the air
+  \item Haze (HZ): Reduced visibility due to dust or smoke
+\end{itemize}
+These conditions can be modified with intensity indicators:\begin{itemize}
+  \item Light (-): Light intensity
+  \item Heavy (+): Heavy intensity
+  \item Showers (SH): Brief periods of precipitation
+  \item Freezing (FZ): Precipitation that freezes on contact
+\end{itemize}
+
+\subsection{Visibility}
+Visibility is measured in miles, ranging from 0 to 32.19 miles in our dataset, with an average of 14.60 miles. This measurement is crucial for aviation safety and indicates how far a pilot can see clearly. When visibility drops below certain thresholds, it can affect airport operations and flight safety.
+
+\subsection{Data Quality and Completeness}
+Our dataset contains 1,900,862 weather observations, with most parameters having very few missing values (less than 0.1\%). However, there are some notable exceptions:\begin{itemize}
+  \item Maximum cloud height (maxcloud) has 17.51\% missing values, which is common as this measurement is only taken when multiple cloud layers are present
+  \item Minimum cloud height (mincloud) has 0.16\% missing values
+  \item Wind speed has 0.08\% missing values
+  \item Temperature and temperature string have 0.02\% missing values each
+\end{itemize}
+These missing values are typical in weather data and can occur due to equipment malfunctions, maintenance periods, or when certain conditions are not present to measure.

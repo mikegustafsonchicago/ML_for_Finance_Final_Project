@@ -1,0 +1,177 @@
+\section{KORD Random Forest: Temperature Prediction Analysis}
+This analysis implements multivariate time series regression models using Random Forest to predict temperature at Chicago O'Hare International Airport (KORD) across multiple time horizons.\
+\begin{itemize}
+  \item Base Model: Random Forest Regression
+  \item Feature Engineering: Time-lagged features for all numeric variables
+  \item Prediction Horizons: Multiple time windows (1h, 24h, 5d, 5d avg, 30d avg)
+  \item Train/Test Split: 80/20
+  \item Random State: 42 (for reproducibility)
+  \item Validation: Standard train-test split
+  \item Model Parameters: n_estimators=100, max_depth=10
+\end{itemize}
+
+\subsection{1 Hour Ahead Temperature Prediction}
+\subsection{Model Performance}
+\begin{tabular}{llr}
+\toprule
+ & Metric & Value \\
+\midrule
+0 & Root Mean Squared Error (RMSE) & 1.44 \\
+1 & Mean Absolute Error (MAE) & 0.97 \\
+2 & R^2 Score & 0.98 \\
+\bottomrule
+\end{tabular}
+
+\subsection{1 Hour Ahead Predictions}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-0-random_forest_temp_prediction_results.png}
+\caption{1 Hour Ahead Predictions}
+\label{fig:1_hour_ahead_pred}
+\end{figure}
+
+\subsection{1 Hour Ahead Feature Importance}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-0-random_forest_temp_feature_importance.png}
+\caption{1 Hour Ahead Feature Importance}
+\label{fig:1_hour_ahead_featimp}
+\end{figure}
+
+
+
+\subsection{24 Hours Ahead Temperature Prediction}
+\subsection{Model Performance}
+\begin{tabular}{llr}
+\toprule
+ & Metric & Value \\
+\midrule
+0 & Root Mean Squared Error (RMSE) & 3.83 \\
+1 & Mean Absolute Error (MAE) & 2.92 \\
+2 & R^2 Score & 0.88 \\
+\bottomrule
+\end{tabular}
+
+\subsection{24 Hours Ahead Predictions}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-1-random_forest_temp_prediction_results.png}
+\caption{24 Hours Ahead Predictions}
+\label{fig:24_hours_ahead_pred}
+\end{figure}
+
+\subsection{24 Hours Ahead Feature Importance}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-1-random_forest_temp_feature_importance.png}
+\caption{24 Hours Ahead Feature Importance}
+\label{fig:24_hours_ahead_featimp}
+\end{figure}
+
+
+
+\subsection{120 Hours (5 Days) Ahead Temperature Prediction}
+\subsection{Model Performance}
+\begin{tabular}{llr}
+\toprule
+ & Metric & Value \\
+\midrule
+0 & Root Mean Squared Error (RMSE) & 4.94 \\
+1 & Mean Absolute Error (MAE) & 3.85 \\
+2 & R^2 Score & 0.80 \\
+\bottomrule
+\end{tabular}
+
+\subsection{120 Hours (5 Days) Ahead Predictions}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-2-random_forest_temp_prediction_results.png}
+\caption{120 Hours (5 Days) Ahead Predictions}
+\label{fig:120_hours_(5_days)_ahead_pred}
+\end{figure}
+
+\subsection{120 Hours (5 Days) Ahead Feature Importance}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-2-random_forest_temp_feature_importance.png}
+\caption{120 Hours (5 Days) Ahead Feature Importance}
+\label{fig:120_hours_(5_days)_ahead_featimp}
+\end{figure}
+
+
+
+\subsection{5-Day Average Ahead Temperature Prediction}
+\subsection{Model Performance}
+\begin{tabular}{llr}
+\toprule
+ & Metric & Value \\
+\midrule
+0 & Root Mean Squared Error (RMSE) & 2.66 \\
+1 & Mean Absolute Error (MAE) & 2.04 \\
+2 & R^2 Score & 0.93 \\
+\bottomrule
+\end{tabular}
+
+\subsection{5-Day Average Ahead Predictions}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-3-random_forest_temp_prediction_results.png}
+\caption{5-Day Average Ahead Predictions}
+\label{fig:5-day_average_ahead_pred}
+\end{figure}
+
+\subsection{5-Day Average Ahead Feature Importance}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-3-random_forest_temp_feature_importance.png}
+\caption{5-Day Average Ahead Feature Importance}
+\label{fig:5-day_average_ahead_featimp}
+\end{figure}
+
+
+
+\subsection{30-Day Average Ahead Temperature Prediction}
+\subsection{Model Performance}
+\begin{tabular}{llr}
+\toprule
+ & Metric & Value \\
+\midrule
+0 & Root Mean Squared Error (RMSE) & 3.19 \\
+1 & Mean Absolute Error (MAE) & 2.47 \\
+2 & R^2 Score & 0.89 \\
+\bottomrule
+\end{tabular}
+
+\subsection{30-Day Average Ahead Predictions}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-4-random_forest_temp_prediction_results.png}
+\caption{30-Day Average Ahead Predictions}
+\label{fig:30-day_average_ahead_pred}
+\end{figure}
+
+\subsection{30-Day Average Ahead Feature Importance}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.7\textwidth]{7-4-random_forest_temp_feature_importance.png}
+\caption{30-Day Average Ahead Feature Importance}
+\label{fig:30-day_average_ahead_featimp}
+\end{figure}
+
+
+\section{Model Interpretation}
+
+These Random Forest models capture the complex relationships between various weather parameters and temperature across different time horizons. The models:\
+\begin{itemize}
+  \item Consider the impact of all available weather parameters
+  \item Account for changes in wind direction through the wind\_dir\_delta feature
+  \item Provide insights into which factors most influence temperature at different time scales
+  \item Handle non-linear relationships between features and target variables
+\end{itemize}
+Future improvements could include:\
+\begin{itemize}
+  \item Feature selection to reduce dimensionality
+  \item Hyperparameter tuning for better model performance
+  \item Time series specific models (ARIMA, LSTM)
+\end{itemize}
+

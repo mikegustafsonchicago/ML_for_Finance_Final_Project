@@ -1,0 +1,347 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KORD Linear Regression with 2-Hour Deltas: Temperature Prediction Analysis</title>
+    <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+    <div class="container">
+        
+    <div class="model-report">
+        <h2>KORD Linear Regression with 2-Hour Deltas: Temperature Prediction Analysis</h2>
+        <div class="model-description">
+            <h3>Model Architecture</h3>
+            <p>This analysis implements multivariate time series regression models to predict temperature at Chicago O'Hare International Airport (KORD) across multiple time horizons, incorporating 2-hour change features.</p>
+            <h4>Model Type</h4>
+            <ul>
+                <li><strong>Base Model:</strong> Multivariate Linear Regression</li>
+                <li><strong>Feature Engineering:</strong> Time-lagged features and 2-hour change features</li>
+                <li><strong>Prediction Horizons:</strong> Multiple time windows (1h, 24h, 5d, 5d avg, 30d avg)</li>
+            </ul>
+            <h4>Feature Details</h4>
+            <div class="data-list">
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th>Feature Name</th>
+                            <th>Description</th>
+                            <th>Units</th>
+                            <th>Time Window</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Temperature</td>
+                            <td>Current and historical temperature measurements</td>
+                            <td>°C</td>
+                            <td>24-hour lag, ±2/5 day, 5-day avg</td>
+                        </tr>
+                        <tr>
+                            <td>Temperature 2h Delta</td>
+                            <td>Change in temperature over last 2 hours</td>
+                            <td>°C</td>
+                            <td>Current</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Speed</td>
+                            <td>Current and historical wind speed measurements</td>
+                            <td>m/s</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Speed 2h Delta</td>
+                            <td>Change in wind speed over last 2 hours</td>
+                            <td>m/s</td>
+                            <td>Current</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Direction</td>
+                            <td>Current and historical wind direction measurements</td>
+                            <td>degrees</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Wind Direction 2h Delta</td>
+                            <td>Change in wind direction over last 2 hours</td>
+                            <td>degrees</td>
+                            <td>Current</td>
+                        </tr>
+                        <tr>
+                            <td>Humidity</td>
+                            <td>Current and historical humidity measurements</td>
+                            <td>%</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Dew Point</td>
+                            <td>Current and historical dew point measurements</td>
+                            <td>°C</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Sea Level Pressure</td>
+                            <td>Current and historical pressure measurements</td>
+                            <td>hPa</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Visibility</td>
+                            <td>Current and historical visibility measurements</td>
+                            <td>km</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                        <tr>
+                            <td>Cloud Coverage</td>
+                            <td>Current and historical min/max cloud coverage</td>
+                            <td>ft</td>
+                            <td>24-hour lag</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <h4>Training Configuration</h4>
+            <ul>
+                <li><strong>Train/Test Split:</strong> 80/20</li>
+                <li><strong>Random State:</strong> 42 (for reproducibility)</li>
+                <li><strong>Validation:</strong> Standard train-test split</li>
+            </ul>
+        </div>
+    </div>
+    
+        <div class="prediction-section">
+            <h3>1 Hour Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>1.36</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>0.91</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.98</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>1 Hour Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-0-linear_temp_shift_results.png" alt="1 Hour Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>1 Hour Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-0-linear_temp_shift_feature_importance.png" alt="1 Hour Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>24 Hours Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>4.72</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>3.57</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.82</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>24 Hours Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-1-linear_temp_shift_results.png" alt="24 Hours Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>24 Hours Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-1-linear_temp_shift_feature_importance.png" alt="24 Hours Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>120 Hours (5 Days) Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>6.31</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>4.88</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.67</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>120 Hours (5 Days) Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-2-linear_temp_shift_results.png" alt="120 Hours (5 Days) Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>120 Hours (5 Days) Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-2-linear_temp_shift_feature_importance.png" alt="120 Hours (5 Days) Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>5-Day Average Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>3.64</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>2.81</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.87</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>5-Day Average Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-3-linear_temp_shift_results.png" alt="5-Day Average Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>5-Day Average Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-3-linear_temp_shift_feature_importance.png" alt="5-Day Average Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>30-Day Average Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>4.53</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>3.65</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.77</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>30-Day Average Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-4-linear_temp_shift_results.png" alt="30-Day Average Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>30-Day Average Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\1-4-linear_temp_shift_feature_importance.png" alt="30-Day Average Ahead Feature Importance">
+        </div>
+        </div>
+    <div class="interpretation-section">
+        <h3>Model Interpretation</h3>
+        <p>These multivariate regression models capture the complex relationships between various weather parameters and temperature across different time horizons. The models:</p>
+        <ul>
+            <li>Consider the impact of all available weather parameters</li>
+            <li>Account for changes in temperature, wind direction, and wind velocity over 2-hour periods</li>
+            <li>Provide insights into which factors most influence temperature at different time scales</li>
+        </ul>
+        <p>Future improvements could include:</p>
+        <ul>
+            <li>Feature selection to reduce dimensionality</li>
+            <li>Non-linear models to capture complex relationships</li>
+            <li>Time series specific models (ARIMA, LSTM)</li>
+        </ul>
+    </div>
+    
+    </div>
+    
+</body>
+</html>

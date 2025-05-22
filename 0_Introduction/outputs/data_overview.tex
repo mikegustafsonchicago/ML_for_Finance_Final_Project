@@ -1,0 +1,93 @@
+\section{Dataset Overview}
+
+\subsection{Data Collection Summary}
+This dataset contains comprehensive weather measurements collected from multiple airports in the Chicago area. The data spans a significant time period, with 1,900,862 individual weather observations recorded.
+\subsection{Time Coverage}
+The measurements were taken between 2018-01-01 00:00 and 2025-03-31 22:00, providing a detailed view of weather patterns in the region. The most common time step between consecutive measurements is 	extbf{0 days 00:00:00}.
+\subsection{Weather Parameters}
+The dataset includes 16 different weather parameters, providing a comprehensive view of atmospheric conditions: \begin{itemize}
+  \item id
+  \item datetime
+  \item skydescriptor
+  \item rain
+  \item temp_str
+  \item temp
+  \item windspeed
+  \item winddirection
+  \item humidity
+  \item dew
+  \item sealevel
+  \item barometric
+  \item visibility
+  \item skycondition
+  \item mincloud
+  \item maxcloud
+\end{itemize}
+
+\subsection{Data Quality}
+Missing values analysis across parameters:
+\begin{tabular}{llrr}
+\toprule
+ & Parameter & Missing Values & Percentage \\
+\midrule
+0 & id & 0 & 0.00 \\
+1 & datetime & 0 & 0.00 \\
+2 & skydescriptor & 21 & 0.00 \\
+3 & rain & 0 & 0.00 \\
+4 & temp_str & 337 & 0.02 \\
+5 & temp & 337 & 0.02 \\
+6 & windspeed & 1472 & 0.08 \\
+7 & winddirection & 137 & 0.01 \\
+8 & humidity & 465 & 0.02 \\
+9 & dew & 422 & 0.02 \\
+10 & sealevel & 82 & 0.00 \\
+11 & barometric & 0 & 0.00 \\
+12 & visibility & 380 & 0.02 \\
+13 & skycondition & 0 & 0.00 \\
+14 & mincloud & 2977 & 0.16 \\
+15 & maxcloud & 332880 & 17.51 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Statistical Summary}
+Key statistics for numerical weather parameters:
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+ & skydescriptor & temp_str & temp & windspeed & winddirection & humidity & dew & sealevel & visibility & mincloud & maxcloud \\
+\midrule
+count & 1900841.00 & 1900525.00 & 1900525.00 & 1899390.00 & 1900725.00 & 1900397.00 & 1900440.00 & 1900780.00 & 1900482.00 & 1897885.00 & 1567982.00 \\
+mean & 8.80 & 5.98 & 10.03 & 13.21 & 203.71 & 72.38 & 4.67 & 1016.77 & 14.60 & 879.47 & 2910.61 \\
+std & 7.22 & 2.18 & 11.33 & 8.97 & 96.62 & 18.56 & 10.76 & 7.44 & 3.63 & 1482.34 & 2691.10 \\
+min & 1.00 & 1.00 & -38.30 & 0.00 & 0.00 & 2.00 & -45.00 & 978.90 & 0.00 & 0.00 & 0.00 \\
+25% & 2.00 & 4.00 & 1.10 & 7.56 & 130.00 & 59.00 & -3.00 & 1012.20 & 16.09 & 22.00 & 792.00 \\
+50% & 7.00 & 6.00 & 10.00 & 12.96 & 230.00 & 74.00 & 4.00 & 1016.60 & 16.09 & 213.00 & 1829.00 \\
+75% & 16.00 & 8.00 & 19.70 & 18.36 & 279.00 & 87.00 & 14.00 & 1021.30 & 16.09 & 1158.00 & 3658.00 \\
+max & 33.00 & 12.00 & 38.30 & 124.20 & 356.00 & 100.00 & 31.70 & 1048.30 & 32.19 & 14326.00 & 29535.00 \\
+\bottomrule
+\end{tabular}
+
+\subsection{Data Types}
+Overview of data types for each parameter:
+\begin{tabular}{lll}
+\toprule
+ & Parameter & Data Type \\
+\midrule
+0 & id & object \\
+1 & datetime & datetime64[ns] \\
+2 & skydescriptor & float64 \\
+3 & rain & object \\
+4 & temp_str & float64 \\
+5 & temp & float64 \\
+6 & windspeed & float64 \\
+7 & winddirection & float64 \\
+8 & humidity & float64 \\
+9 & dew & float64 \\
+10 & sealevel & float64 \\
+11 & barometric & object \\
+12 & visibility & float64 \\
+13 & skycondition & object \\
+14 & mincloud & float64 \\
+15 & maxcloud & float64 \\
+\bottomrule
+\end{tabular}
+

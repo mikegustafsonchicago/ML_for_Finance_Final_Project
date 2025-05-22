@@ -14,12 +14,12 @@
         <h2>KORD Linear Regression: Temperature Prediction Analysis</h2>
         <div class="model-description">
             <h3>Model Architecture</h3>
-            <p>This analysis implements a multivariate time series regression model to predict temperature at Chicago O'Hare International Airport (KORD).</p>
+            <p>This analysis implements multivariate time series regression models to predict temperature at Chicago O'Hare International Airport (KORD) across multiple time horizons.</p>
             <h4>Model Type</h4>
             <ul>
                 <li><strong>Base Model:</strong> Multivariate Linear Regression</li>
                 <li><strong>Feature Engineering:</strong> Time-lagged features for all numeric variables</li>
-                <li><strong>Prediction Target:</strong> Next hour's temperature</li>
+                <li><strong>Prediction Horizons:</strong> Multiple time windows (1h, 24h, 5d, 5d avg, 30d avg)</li>
             </ul>
             <h4>Feature Details</h4>
             <div class="data-list">
@@ -37,7 +37,7 @@
                             <td>Temperature</td>
                             <td>Current and historical temperature measurements</td>
                             <td>°C</td>
-                            <td>24-hour lag</td>
+                            <td>24-hour lag, ±2/5 day, 5-day avg</td>
                         </tr>
                         <tr>
                             <td>Wind Speed</td>
@@ -99,13 +99,227 @@
         </div>
     </div>
     
+        <div class="prediction-section">
+            <h3>1 Hour Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>1.37</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>0.91</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.98</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>1 Hour Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-0-linear_temp_prediction_results.png" alt="1 Hour Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>1 Hour Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-0-linear_temp_feature_importance.png" alt="1 Hour Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>24 Hours Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>4.73</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>3.58</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.82</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>24 Hours Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-1-linear_temp_prediction_results.png" alt="24 Hours Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>24 Hours Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-1-linear_temp_feature_importance.png" alt="24 Hours Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>120 Hours (5 Days) Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>6.31</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>4.88</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.67</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>120 Hours (5 Days) Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-2-linear_temp_prediction_results.png" alt="120 Hours (5 Days) Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>120 Hours (5 Days) Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-2-linear_temp_feature_importance.png" alt="120 Hours (5 Days) Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>5-Day Average Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>3.64</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>2.81</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.87</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>5-Day Average Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-3-linear_temp_prediction_results.png" alt="5-Day Average Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>5-Day Average Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-3-linear_temp_feature_importance.png" alt="5-Day Average Ahead Feature Importance">
+        </div>
+        </div>
+
+        <div class="prediction-section">
+            <h3>30-Day Average Ahead Temperature Prediction</h3>
+            <div class="metrics-section">
+                <h4>Model Performance</h4>
+                <div class="data-list">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Root Mean Squared Error (RMSE)</td>
+                                <td>4.53</td>
+                            </tr>
+                            <tr>
+                                <td>Mean Absolute Error (MAE)</td>
+                                <td>3.65</td>
+                            </tr>
+                            <tr>
+                                <td>R² Score</td>
+                                <td>0.77</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        
+        <div class="section">
+            <h3>30-Day Average Ahead Predictions</h3>
+            <p>The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-4-linear_temp_prediction_results.png" alt="30-Day Average Ahead Predictions">
+        </div>
+        
+        <div class="section">
+            <h3>30-Day Average Ahead Feature Importance</h3>
+            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\5-4-linear_temp_feature_importance.png" alt="30-Day Average Ahead Feature Importance">
+        </div>
+        </div>
     <div class="interpretation-section">
         <h3>Model Interpretation</h3>
-        <p>This multivariate regression model captures the complex relationships between various weather parameters and temperature. The model:</p>
+        <p>These multivariate regression models capture the complex relationships between various weather parameters and temperature across different time horizons. The models:</p>
         <ul>
-            <li>Considers the impact of all available weather parameters</li>
-            <li>Accounts for changes in wind direction through the wind_dir_delta feature</li>
-            <li>Provides insights into which factors most influence temperature</li>
+            <li>Consider the impact of all available weather parameters</li>
+            <li>Account for changes in wind direction through the wind_dir_delta feature</li>
+            <li>Provide insights into which factors most influence temperature at different time scales</li>
         </ul>
         <p>Future improvements could include:</p>
         <ul>
@@ -115,46 +329,6 @@
         </ul>
     </div>
     
-    <div class="metrics-section">
-        <h3>Model Performance</h3>
-        <div class="data-list">
-            <table class="metrics-table">
-                <thead>
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Root Mean Squared Error (RMSE)</td>
-                        <td>3.95</td>
-                    </tr>
-                    <tr>
-                        <td>Mean Absolute Error (MAE)</td>
-                        <td>2.95</td>
-                    </tr>
-                    <tr>
-                        <td>R² Score</td>
-                        <td>0.88</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-    
-        <div class="section">
-            <h3>Sample Week Predictions</h3>
-            <p>The following plots show the actual vs predicted temperatures for sample weeks in different months. The blue line represents actual measurements, while the orange line shows our model's predictions.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\linear_temp_prediction_results.png" alt="Sample Week Predictions">
-        </div>
-        
-        <div class="section">
-            <h3>Feature Importance</h3>
-            <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\1_KORD_Self_Regression\outputs\linear_temp_feature_importance.png" alt="Feature Importance">
-        </div>
-        
     </div>
     
 </body>

@@ -7,6 +7,7 @@ from datetime import datetime
 import sys
 sys.path.append('..')  # Add parent directory to path to import html_manager
 from html_manager import HTMLManager
+from Utils.latex_utility import save_latex_file, latex_section, latex_subsection, latex_list
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,55 @@ def create_html_report(plot_paths, html_manager):
     output_path = html_manager.save_section_html("Wind_Radar_Analysis", html_content, "wind_radar_analysis.html")
     return html_content, output_path
 
+def create_latex_report(plot_paths, output_dir):
+    """
+    Create LaTeX report for the wind radar visualization
+    """
+    intro = latex_section("Wind Pattern Analysis: KORD Airport",
+        "This analysis examines wind patterns at Chicago O'Hare International Airport (KORD) during the first week of April 2020. "
+        "The visualization shows wind speed and direction patterns throughout the day, categorized into four time periods:" +
+        latex_list([
+            "Night: 00:00-06:00 (Purple)",
+            "Morning: 06:00-12:00 (Orange)",
+            "Afternoon: 12:00-18:00 (Green)",
+            "Evening: 18:00-24:00 (Blue)"
+        ]) +
+        latex_subsection("Visualization Details",
+            latex_list([
+                "Radial Distance: Represents wind speed in meters per second (m/s)",
+                "Angle (Wind Direction): Represents the direction the wind is coming from:"
+            ]) +
+            latex_list([
+                "0° (North): Wind coming from the north",
+                "90° (East): Wind coming from the east",
+                "180° (South): Wind coming from the south",
+                "270° (West): Wind coming from the west"
+            ]) +
+            "Color Coding: Indicates time of day, helping to identify daily wind patterns"
+        ) +
+        latex_subsection("Interpretation Guide",
+            "When reading these radar plots:" + latex_list([
+                "Points further from the center indicate stronger winds",
+                "The angle shows where the wind is coming from (not where it's going)",
+                "Clusters of points in similar directions suggest prevailing wind patterns",
+                "Different colors in the same direction indicate how wind patterns change throughout the day"
+            ])
+        )
+    )
+    # Create visualization sections
+    visualization_sections = ""
+    for date, plot_path in plot_paths.items():
+        section = latex_subsection(
+            f"Wind Patterns for {date.strftime('%B %d, %Y')}",
+            f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.7\\textwidth]{{{Path(plot_path).name}}}\n\\caption{{Wind Patterns for {date.strftime('%B %d, %Y')}}}\n\\label{{fig:wind_{date.strftime('%Y%m%d')}}}\n\\end{{figure}}\n"
+        )
+        visualization_sections += section
+    latex_content = intro + visualization_sections
+    latex_output_path = output_dir / 'wind_radar_analysis.tex'
+    save_latex_file(latex_content, latex_output_path)
+    logger.info(f"LaTeX wind radar analysis report created: {latex_output_path}")
+    return latex_output_path
+
 def main():
     try:
         # Set up logging
@@ -167,6 +217,8 @@ def main():
         # Create HTML report
         html_content, output_path = create_html_report(plot_paths, manager)
         logger.info(f"Analysis complete. Results saved to {output_path}")
+        # Create LaTeX report
+        create_latex_report(plot_paths, output_dir)
         
     except Exception as e:
         logger.error(f"Error in wind radar analysis: {str(e)}")

@@ -1,0 +1,182 @@
+
+    <div class="section">
+        <h2>Dataset Overview</h2>
+        
+        <h3>Data Collection Summary</h3>
+        <p>This dataset contains comprehensive weather measurements collected from multiple airports in the Chicago area. 
+        The data spans a significant time period, with 1,900,862 individual weather observations recorded.</p>
+        
+        <h3>Time Coverage</h3>
+        <p>The measurements were taken between 2018-01-01 00:00 and 2025-03-31 22:00, 
+        providing a detailed view of weather patterns in the region.</p>
+        <p>The most common time step between consecutive measurements is <b>0 days 00:00:00</b>.</p>
+        
+        <h3>Weather Parameters</h3>
+        <p>The dataset includes 16 different weather parameters, providing a comprehensive view of atmospheric conditions:</p>
+        <div class="data-list">
+            <span class="column-name">id</span>, <span class="column-name">datetime</span>, <span class="column-name">skydescriptor</span>, <span class="column-name">rain</span>, <span class="column-name">temp_str</span>, <span class="column-name">temp</span>, <span class="column-name">windspeed</span>, <span class="column-name">winddirection</span>, <span class="column-name">humidity</span>, <span class="column-name">dew</span>, <span class="column-name">sealevel</span>, <span class="column-name">barometric</span>, <span class="column-name">visibility</span>, <span class="column-name">skycondition</span>, <span class="column-name">mincloud</span>, <span class="column-name">maxcloud</span>
+        </div>
+        
+        <h3>Data Quality</h3>
+        <p>Missing values analysis across parameters:</p>
+        <div class="data-list">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Parameter</th>
+                    <th style="text-align: right; padding: 8px;">Missing Values</th>
+                    <th style="text-align: right; padding: 8px;">Percentage</th>
+                </tr>
+                <tr><td style="padding: 8px;">id</td><td style="text-align: right; padding: 8px;">0</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">datetime</td><td style="text-align: right; padding: 8px;">0</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">skydescriptor</td><td style="text-align: right; padding: 8px;">21</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">rain</td><td style="text-align: right; padding: 8px;">0</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">temp_str</td><td style="text-align: right; padding: 8px;">337</td><td style="text-align: right; padding: 8px;">0.02%</td></tr><tr><td style="padding: 8px;">temp</td><td style="text-align: right; padding: 8px;">337</td><td style="text-align: right; padding: 8px;">0.02%</td></tr><tr><td style="padding: 8px;">windspeed</td><td style="text-align: right; padding: 8px;">1,472</td><td style="text-align: right; padding: 8px;">0.08%</td></tr><tr><td style="padding: 8px;">winddirection</td><td style="text-align: right; padding: 8px;">137</td><td style="text-align: right; padding: 8px;">0.01%</td></tr><tr><td style="padding: 8px;">humidity</td><td style="text-align: right; padding: 8px;">465</td><td style="text-align: right; padding: 8px;">0.02%</td></tr><tr><td style="padding: 8px;">dew</td><td style="text-align: right; padding: 8px;">422</td><td style="text-align: right; padding: 8px;">0.02%</td></tr><tr><td style="padding: 8px;">sealevel</td><td style="text-align: right; padding: 8px;">82</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">barometric</td><td style="text-align: right; padding: 8px;">0</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">visibility</td><td style="text-align: right; padding: 8px;">380</td><td style="text-align: right; padding: 8px;">0.02%</td></tr><tr><td style="padding: 8px;">skycondition</td><td style="text-align: right; padding: 8px;">0</td><td style="text-align: right; padding: 8px;">0.0%</td></tr><tr><td style="padding: 8px;">mincloud</td><td style="text-align: right; padding: 8px;">2,977</td><td style="text-align: right; padding: 8px;">0.16%</td></tr><tr><td style="padding: 8px;">maxcloud</td><td style="text-align: right; padding: 8px;">332,880</td><td style="text-align: right; padding: 8px;">17.51%</td></tr>
+            </table>
+        </div>
+        
+        <h3>Statistical Summary</h3>
+        <p>Key statistics for numerical weather parameters:</p>
+        <div class="data-list">
+            <pre><table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>skydescriptor</th>
+      <th>temp_str</th>
+      <th>temp</th>
+      <th>windspeed</th>
+      <th>winddirection</th>
+      <th>humidity</th>
+      <th>dew</th>
+      <th>sealevel</th>
+      <th>visibility</th>
+      <th>mincloud</th>
+      <th>maxcloud</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>count</th>
+      <td>1,900,841.00</td>
+      <td>1,900,525.00</td>
+      <td>1,900,525.00</td>
+      <td>1,899,390.00</td>
+      <td>1,900,725.00</td>
+      <td>1,900,397.00</td>
+      <td>1,900,440.00</td>
+      <td>1,900,780.00</td>
+      <td>1,900,482.00</td>
+      <td>1,897,885.00</td>
+      <td>1,567,982.00</td>
+    </tr>
+    <tr>
+      <th>mean</th>
+      <td>8.80</td>
+      <td>5.98</td>
+      <td>10.03</td>
+      <td>13.21</td>
+      <td>203.71</td>
+      <td>72.38</td>
+      <td>4.67</td>
+      <td>1,016.77</td>
+      <td>14.60</td>
+      <td>879.47</td>
+      <td>2,910.61</td>
+    </tr>
+    <tr>
+      <th>std</th>
+      <td>7.22</td>
+      <td>2.18</td>
+      <td>11.33</td>
+      <td>8.97</td>
+      <td>96.62</td>
+      <td>18.56</td>
+      <td>10.76</td>
+      <td>7.44</td>
+      <td>3.63</td>
+      <td>1,482.34</td>
+      <td>2,691.10</td>
+    </tr>
+    <tr>
+      <th>min</th>
+      <td>1.00</td>
+      <td>1.00</td>
+      <td>-38.30</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>2.00</td>
+      <td>-45.00</td>
+      <td>978.90</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+    </tr>
+    <tr>
+      <th>25%</th>
+      <td>2.00</td>
+      <td>4.00</td>
+      <td>1.10</td>
+      <td>7.56</td>
+      <td>130.00</td>
+      <td>59.00</td>
+      <td>-3.00</td>
+      <td>1,012.20</td>
+      <td>16.09</td>
+      <td>22.00</td>
+      <td>792.00</td>
+    </tr>
+    <tr>
+      <th>50%</th>
+      <td>7.00</td>
+      <td>6.00</td>
+      <td>10.00</td>
+      <td>12.96</td>
+      <td>230.00</td>
+      <td>74.00</td>
+      <td>4.00</td>
+      <td>1,016.60</td>
+      <td>16.09</td>
+      <td>213.00</td>
+      <td>1,829.00</td>
+    </tr>
+    <tr>
+      <th>75%</th>
+      <td>16.00</td>
+      <td>8.00</td>
+      <td>19.70</td>
+      <td>18.36</td>
+      <td>279.00</td>
+      <td>87.00</td>
+      <td>14.00</td>
+      <td>1,021.30</td>
+      <td>16.09</td>
+      <td>1,158.00</td>
+      <td>3,658.00</td>
+    </tr>
+    <tr>
+      <th>max</th>
+      <td>33.00</td>
+      <td>12.00</td>
+      <td>38.30</td>
+      <td>124.20</td>
+      <td>356.00</td>
+      <td>100.00</td>
+      <td>31.70</td>
+      <td>1,048.30</td>
+      <td>32.19</td>
+      <td>14,326.00</td>
+      <td>29,535.00</td>
+    </tr>
+  </tbody>
+</table></pre>
+        </div>
+        
+        <h3>Data Types</h3>
+        <p>Overview of data types for each parameter:</p>
+        <div class="data-list">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <th style="text-align: left; padding: 8px;">Parameter</th>
+                    <th style="text-align: left; padding: 8px;">Data Type</th>
+                </tr>
+                <tr><td style="padding: 8px;">id</td><td style="padding: 8px;">object</td></tr><tr><td style="padding: 8px;">datetime</td><td style="padding: 8px;">datetime64[ns]</td></tr><tr><td style="padding: 8px;">skydescriptor</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">rain</td><td style="padding: 8px;">object</td></tr><tr><td style="padding: 8px;">temp_str</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">temp</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">windspeed</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">winddirection</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">humidity</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">dew</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">sealevel</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">barometric</td><td style="padding: 8px;">object</td></tr><tr><td style="padding: 8px;">visibility</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">skycondition</td><td style="padding: 8px;">object</td></tr><tr><td style="padding: 8px;">mincloud</td><td style="padding: 8px;">float64</td></tr><tr><td style="padding: 8px;">maxcloud</td><td style="padding: 8px;">float64</td></tr>
+            </table>
+        </div>
+    </div>
+    
