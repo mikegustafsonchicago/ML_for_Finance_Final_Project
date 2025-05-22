@@ -453,6 +453,36 @@ Future improvements could include:\\
     logger.info(f"LaTeX random forest regression report created: {latex_output_path}")
     return latex_output_path
 
+def save_prediction_results(datetime_test, y_test, y_pred, output_dir, suffix):
+    """
+    Save prediction results to CSV file
+    """
+    results_df = pd.DataFrame({
+        'datetime': datetime_test,
+        'actual': y_test,
+        'predicted': y_pred,
+        'error': y_test - y_pred,
+        'abs_error': abs(y_test - y_pred)
+    })
+    
+    # Add prediction horizon information
+    if suffix == "0":
+        horizon = "1_hour_ahead"
+    elif suffix == "1":
+        horizon = "24_hours_ahead"
+    elif suffix == "2":
+        horizon = "120_hours_ahead"
+    elif suffix == "3":
+        horizon = "5_day_average"
+    else:
+        horizon = "30_day_average"
+    
+    # Save to CSV
+    output_path = output_dir / f'7-{suffix}-random_forest_temp_prediction_results.csv'
+    results_df.to_csv(output_path, index=False)
+    logger.info(f"Saved prediction results to {output_path}")
+    return output_path
+
 def main():
     try:
         output_dir = Path(__file__).parent / 'outputs'
@@ -468,10 +498,12 @@ def main():
         model_1h, X_test_1h, y_test_1h, y_pred_1h, datetime_test_1h, metrics_1h = train_model(X, y_1h, datetime)
         plot_path_1h = plot_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, suffix="0")
         feature_importance_plot_1h = plot_feature_importance(metrics_1h['Feature_Importance'], output_dir, suffix="0")
+        csv_path_1h = save_prediction_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, suffix="0")
         all_results["1 Hour Ahead"] = {
             'metrics': metrics_1h,
             'plot_path': plot_path_1h,
-            'feature_importance_plot': feature_importance_plot_1h
+            'feature_importance_plot': feature_importance_plot_1h,
+            'csv_path': csv_path_1h
         }
         logger.info("1-hour prediction analysis complete")
         
@@ -479,10 +511,12 @@ def main():
         model_24h, X_test_24h, y_test_24h, y_pred_24h, datetime_test_24h, metrics_24h = train_model(X, y_24h, datetime)
         plot_path_24h = plot_results(datetime_test_24h, y_test_24h, y_pred_24h, output_dir, suffix="1")
         feature_importance_plot_24h = plot_feature_importance(metrics_24h['Feature_Importance'], output_dir, suffix="1")
+        csv_path_24h = save_prediction_results(datetime_test_24h, y_test_24h, y_pred_24h, output_dir, suffix="1")
         all_results["24 Hours Ahead"] = {
             'metrics': metrics_24h,
             'plot_path': plot_path_24h,
-            'feature_importance_plot': feature_importance_plot_24h
+            'feature_importance_plot': feature_importance_plot_24h,
+            'csv_path': csv_path_24h
         }
         logger.info("24-hour prediction analysis complete")
         
@@ -490,10 +524,12 @@ def main():
         model_120h, X_test_120h, y_test_120h, y_pred_120h, datetime_test_120h, metrics_120h = train_model(X, y_120h, datetime)
         plot_path_120h = plot_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, suffix="2")
         feature_importance_plot_120h = plot_feature_importance(metrics_120h['Feature_Importance'], output_dir, suffix="2")
+        csv_path_120h = save_prediction_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, suffix="2")
         all_results["120 Hours (5 Days) Ahead"] = {
             'metrics': metrics_120h,
             'plot_path': plot_path_120h,
-            'feature_importance_plot': feature_importance_plot_120h
+            'feature_importance_plot': feature_importance_plot_120h,
+            'csv_path': csv_path_120h
         }
         logger.info("120-hour prediction analysis complete")
         
@@ -501,10 +537,12 @@ def main():
         model_5d_avg, X_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, datetime_test_5d_avg, metrics_5d_avg = train_model(X, y_5d_avg, datetime)
         plot_path_5d_avg = plot_results(datetime_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, output_dir, suffix="3")
         feature_importance_plot_5d_avg = plot_feature_importance(metrics_5d_avg['Feature_Importance'], output_dir, suffix="3")
+        csv_path_5d_avg = save_prediction_results(datetime_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, output_dir, suffix="3")
         all_results["5-Day Average Ahead"] = {
             'metrics': metrics_5d_avg,
             'plot_path': plot_path_5d_avg,
-            'feature_importance_plot': feature_importance_plot_5d_avg
+            'feature_importance_plot': feature_importance_plot_5d_avg,
+            'csv_path': csv_path_5d_avg
         }
         logger.info("5-day average prediction analysis complete")
         
@@ -512,10 +550,12 @@ def main():
         model_30d_avg, X_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, datetime_test_30d_avg, metrics_30d_avg = train_model(X, y_30d_avg, datetime)
         plot_path_30d_avg = plot_results(datetime_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, output_dir, suffix="4")
         feature_importance_plot_30d_avg = plot_feature_importance(metrics_30d_avg['Feature_Importance'], output_dir, suffix="4")
+        csv_path_30d_avg = save_prediction_results(datetime_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, output_dir, suffix="4")
         all_results["30-Day Average Ahead"] = {
             'metrics': metrics_30d_avg,
             'plot_path': plot_path_30d_avg,
-            'feature_importance_plot': feature_importance_plot_30d_avg
+            'feature_importance_plot': feature_importance_plot_30d_avg,
+            'csv_path': csv_path_30d_avg
         }
         logger.info("30-day average prediction analysis complete")
         

@@ -62,177 +62,67 @@ def calculate_2hour_deltas(df, airport_code):
     
     return pd.DataFrame(deltas)
 
-def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24, chunk_size=50000):
+def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24):
     """
-    Load and prepare data for time series regression
+    Load and prepare data for time series regression, focusing only on KORD data
     """
     start_time = time.time()
     log_progress("Starting data preparation...")
     
-    # Read data in chunks with progress bar
-    log_progress("Loading data in chunks...")
-    chunks = []
-    chunk_start = time.time()
-    for i, chunk in enumerate(tqdm(pd.read_csv(file_path, chunksize=chunk_size), desc="Loading data chunks")):
-        chunks.append(chunk)
-        if (i + 1) % 5 == 0:  # Log every 5 chunks
-            log_progress(f"Loaded {i + 1} chunks", chunk_start)
-            chunk_start = time.time()
+    # Load only KORD data
+    log_progress("Loading KORD data...")
+    df = pd.read_csv(file_path)
+    df = df[df['id'] == 'KORD'].copy()
+    log_progress(f"Loaded KORD data shape: {df.shape}")
     
-    log_progress("Concatenating chunks...")
-    df = pd.concat(chunks)
-    log_progress(f"Loaded data shape: {df.shape}", start_time)
-    log_progress(f"Columns in loaded data: {list(df.columns)}")
-    
-    # Get unique airport codes
-    airport_codes = df['id'].unique()
-    log_progress(f"Found {len(airport_codes)} airports: {airport_codes}")
-    
-    # Create a pivot table with datetime as index and airport-specific columns
-    log_progress("Processing datetime and sorting data...")
+    # Process datetime
+    log_progress("Processing datetime...")
     df['datetime'] = parse_custom_datetime(df['datetime'])
     df = df.sort_values('datetime')
     
-    # Pivot the data to create airport-specific columns
-    log_progress("Creating airport-specific columns...")
-    pivot_start = time.time()
-    
-    # First, ensure we have a clean datetime index
-    df = df.set_index(['datetime', 'id']).sort_index()
-    
-    # Create a list to store pivoted DataFrames for each feature
-    pivoted_dfs = []
-    features = ['temp', 'windspeed', 'winddirection', 'humidity', 'dew', 'sealevel', 'visibility', 'mincloud', 'maxcloud']
-    
-    for feature in tqdm(features, desc="Pivoting features"):
-        if feature in df.columns:
-            # Pivot each feature
-            pivoted = df[feature].unstack(level='id')
-            # Rename columns to include feature name
-            pivoted.columns = [f'{col}_{feature}' for col in pivoted.columns]
-            pivoted_dfs.append(pivoted)
-    
-    # Combine all pivoted features
-    df = pd.concat(pivoted_dfs, axis=1)
-    log_progress(f"Data shape after pivoting: {df.shape}")
-    log_progress(f"Pivoting completed in {time.time() - pivot_start:.2f} seconds")
-    
-    # Save intermediate results
-    log_progress("Saving intermediate results...")
-    temp_file = Path('temp_airport_data.csv')
-    df.to_csv(temp_file, index=True)
-    log_progress(f"Saved intermediate data to {temp_file}")
-    
-    # Calculate 2-hour deltas for each airport
+    # Calculate 2-hour deltas
     log_progress("Calculating 2-hour deltas...")
-    delta_dfs = []
-    delta_start = time.time()
+    # Temperature delta
+    df['temp_2h_delta'] = df['temp'].diff(2)
     
-    for airport in tqdm(airport_codes, desc="Calculating deltas"):
-        # Calculate deltas for each feature
-        deltas = {}
-        for feature in ['temp', 'winddirection', 'windspeed']:
-            col = f'{airport}_{feature}'
-            if col in df.columns:
-                if feature == 'winddirection':
-                    # Handle circular nature of wind direction
-                    delta = df[col].diff(2)
-                    delta.loc[delta > 180] -= 360
-                    delta.loc[delta < -180] += 360
-                else:
-                    delta = df[col].diff(2)
-                deltas[f'{airport}_{feature}_2h_delta'] = delta
-        
-        if deltas:
-            delta_dfs.append(pd.DataFrame(deltas))
+    # Wind direction delta (handling circular nature)
+    df['wind_dir_2h_delta'] = df['winddirection'].diff(2)
+    df.loc[df['wind_dir_2h_delta'] > 180, 'wind_dir_2h_delta'] -= 360
+    df.loc[df['wind_dir_2h_delta'] < -180, 'wind_dir_2h_delta'] += 360
     
-    # Combine all delta features
-    if delta_dfs:
-        delta_df = pd.concat(delta_dfs, axis=1)
-        df = pd.concat([df, delta_df], axis=1)
+    # Wind velocity delta
+    df['wind_vel_2h_delta'] = df['windspeed'].diff(2)
     
-    log_progress(f"Data shape after calculating deltas: {df.shape}")
-    
-    # Save intermediate results
-    log_progress("Saving data with deltas...")
-    df.to_csv(temp_file, index=True)
-    log_progress(f"Updated intermediate data with deltas")
-
-    # Process data in chunks to reduce memory usage
-    chunk_size = 50000  # Reduced chunk size
-    n_chunks = len(df) // chunk_size + (1 if len(df) % chunk_size else 0)
-    log_progress(f"Will process {n_chunks} chunks of size {chunk_size}")
-    
+    # Create lagged features
     log_progress("Creating lagged features...")
-    all_lagged_features = []
-    chunk_start = time.time()
+    lagged_features = {}
     
-    for i in tqdm(range(n_chunks), desc="Processing chunks"):
-        start_idx = i * chunk_size
-        end_idx = min((i + 1) * chunk_size, len(df))
-        chunk = df.iloc[start_idx:end_idx].copy()
-        
-        # Create lagged features for this chunk
-        chunk_lagged_features = {}
-        
-        # Process each airport's features
-        for airport in airport_codes:
-            # Create lagged features for each base feature
-            for feature in features:
-                col = f'{airport}_{feature}'
-                if col in chunk.columns:
-                    # Create hourly lags
-                    for lag in range(1, n_lags + 1):
-                        chunk_lagged_features[f'{col}_lag_{lag}'] = chunk[col].shift(lag)
-            
-            # Special handling for temperature
-            temp_col = f'{airport}_temp'
-            if temp_col in chunk.columns:
-                # Add specific temperature lags
-                chunk_lagged_features[f'{temp_col}_lag_48'] = chunk[temp_col].shift(48)
-                chunk_lagged_features[f'{temp_col}_lag_120'] = chunk[temp_col].shift(120)
-                chunk_lagged_features[f'{temp_col}_rolling_5d_avg'] = chunk[temp_col].shift(1).rolling(window=120, min_periods=1).mean()
-        
-        # Convert to DataFrame and append
-        chunk_lagged_df = pd.DataFrame(chunk_lagged_features)
-        all_lagged_features.append(chunk_lagged_df)
-        
-        # Save intermediate results
-        if i % 5 == 0:  # Save every 5 chunks
-            temp_lagged_file = Path(f'temp_lagged_features_{i}.csv')
-            chunk_lagged_df.to_csv(temp_lagged_file, index=True)
-            log_progress(f"Saved intermediate lagged features to {temp_lagged_file}")
-        
-        # Clear memory
-        del chunk
-        del chunk_lagged_features
-        del chunk_lagged_df
-        
-        # Log progress
-        if (i + 1) % 5 == 0:  # Log every 5 chunks
-            log_progress(f"Processed {i + 1}/{n_chunks} chunks", chunk_start)
-            chunk_start = time.time()
+    # Base features to create lags for
+    base_features = ['temp', 'windspeed', 'winddirection', 'humidity', 'dew', 'sealevel', 'visibility', 'mincloud', 'maxcloud']
     
-    # Combine all chunks
-    log_progress("Combining all chunks...")
-    lagged_df = pd.concat(all_lagged_features, axis=0)
-    log_progress(f"Lagged DataFrame shape: {lagged_df.shape}")
+    # Create hourly lags for each base feature
+    for feature in base_features:
+        if feature in df.columns:
+            for lag in range(1, n_lags + 1):
+                lagged_features[f'{feature}_lag_{lag}'] = df[feature].shift(lag)
     
-    # Save final lagged features
-    log_progress("Saving final lagged features...")
-    lagged_df.to_csv('final_lagged_features.csv', index=True)
-    log_progress("Saved final lagged features")
+    # Add specific temperature lags
+    lagged_features['temp_lag_48'] = df['temp'].shift(48)
+    lagged_features['temp_lag_120'] = df['temp'].shift(120)
+    lagged_features['temp_rolling_5d_avg'] = df['temp'].shift(1).rolling(window=120, min_periods=1).mean()
+    
+    # Convert lagged features to DataFrame
+    lagged_df = pd.DataFrame(lagged_features)
     
     # Combine with original data
-    log_progress("Combining with original data...")
+    log_progress("Combining features...")
     df_lagged = pd.concat([df, lagged_df], axis=1)
-    log_progress(f"Shape after combining lagged features: {df_lagged.shape}")
     
     # Drop rows with NaN values
     log_progress("Dropping NaN values...")
     df_lagged = df_lagged.dropna().reset_index(drop=True)
-    log_progress(f"Shape after dropping NaNs: {df_lagged.shape}")
-
+    log_progress(f"Final data shape: {df_lagged.shape}")
+    
     # Prepare features and targets
     log_progress("Preparing features and targets...")
     feature_cols = [col for col in df_lagged.columns if (
@@ -242,18 +132,18 @@ def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24, chunk_size=50
     
     X = df_lagged[feature_cols]
     
-    # Use KORD temperature as target
+    # Create target variables
     log_progress("Creating target variables...")
-    y_1h = df_lagged['KORD_temp'].shift(-1)    # 1 hour ahead
-    y_24h = df_lagged['KORD_temp'].shift(-24)  # 24 hours ahead
-    y_120h = df_lagged['KORD_temp'].shift(-120)  # 120 hours ahead (5 days)
+    y_1h = df_lagged['temp'].shift(-1)    # 1 hour ahead
+    y_24h = df_lagged['temp'].shift(-24)  # 24 hours ahead
+    y_120h = df_lagged['temp'].shift(-120)  # 120 hours ahead (5 days)
     
     # Calculate 5-day and 30-day average targets
-    y_5d_avg = df_lagged['KORD_temp'].rolling(window=120, min_periods=1).mean().shift(-120)  # 5-day average ahead
-    y_30d_avg = df_lagged['KORD_temp'].rolling(window=720, min_periods=1).mean().shift(-720)  # 30-day average ahead
+    y_5d_avg = df_lagged['temp'].rolling(window=120, min_periods=1).mean().shift(-120)  # 5-day average ahead
+    y_30d_avg = df_lagged['temp'].rolling(window=720, min_periods=1).mean().shift(-720)  # 30-day average ahead
     
-    datetime = df_lagged.index
-
+    datetime = df_lagged['datetime']
+    
     # Drop rows where targets are nan (due to shifting)
     log_progress("Dropping rows with NaN targets...")
     valid_idx = (~y_1h.isna()) & (~y_24h.isna()) & (~y_120h.isna()) & (~y_5d_avg.isna()) & (~y_30d_avg.isna())
@@ -264,16 +154,10 @@ def load_and_prepare_data(file_path='../datastep2.csv', n_lags=24, chunk_size=50
     y_5d_avg = y_5d_avg[valid_idx].reset_index(drop=True)
     y_30d_avg = y_30d_avg[valid_idx].reset_index(drop=True)
     datetime = datetime[valid_idx].reset_index(drop=True)
-
-    # Clean up temporary files
-    log_progress("Cleaning up temporary files...")
-    for temp_file in Path('.').glob('temp_*.csv'):
-        temp_file.unlink()
-    log_progress("Cleaned up temporary files")
-
+    
     total_time = time.time() - start_time
     log_progress(f"Data preparation completed in {total_time:.2f} seconds")
-
+    
     return X, y_1h, y_24h, y_120h, y_5d_avg, y_30d_avg, datetime, feature_cols
 
 def train_model(X, y, datetime):
@@ -391,6 +275,39 @@ def create_html_report(all_results, html_manager):
             <h3>Model Architecture</h3>
             <p>This analysis implements multivariate time series regression models to predict temperature at Chicago O'Hare International Airport (KORD) using weather data from multiple airports. The model incorporates both historical data and recent changes in weather patterns across all airports.</p>
             
+            <h4>Regressors (Predictor Variables)</h4>
+            <p>Our model uses the following variables to predict KORD's temperature:</p>
+            <ul>
+                <li><strong>KORD's Own Historical Data:</strong>
+                    <ul>
+                        <li>Temperature measurements from the past 24 hours (hourly lags)</li>
+                        <li>Temperature measurements from 48 hours ago (2-day lag)</li>
+                        <li>Temperature measurements from 120 hours ago (5-day lag)</li>
+                        <li>5-day rolling average temperature (excluding current hour)</li>
+                    </ul>
+                </li>
+                <li><strong>Other Airports' Current and Historical Data:</strong>
+                    <ul>
+                        <li>Temperature measurements and their 24-hour lags</li>
+                        <li>Wind speed measurements and their 24-hour lags</li>
+                        <li>Wind direction measurements and their 24-hour lags</li>
+                        <li>Humidity measurements and their 24-hour lags</li>
+                        <li>Dew point measurements and their 24-hour lags</li>
+                        <li>Sea level pressure measurements and their 24-hour lags</li>
+                        <li>Visibility measurements and their 24-hour lags</li>
+                        <li>Cloud coverage measurements and their 24-hour lags</li>
+                    </ul>
+                </li>
+                <li><strong>2-Hour Change Features:</strong>
+                    <ul>
+                        <li>Temperature changes over the last 2 hours</li>
+                        <li>Wind direction changes over the last 2 hours</li>
+                        <li>Wind velocity changes over the last 2 hours</li>
+                    </ul>
+                </li>
+            </ul>
+            <p>Each of these features is calculated for every airport in our dataset, creating a rich set of predictors that capture both local and regional weather patterns.</p>
+            
             <h4>Data Structure</h4>
             <p>The dataset contains weather measurements from multiple airports, with each measurement prefixed by its airport code (e.g., KORD, KZZZ). For each airport, we track:</p>
             <ul>
@@ -398,6 +315,7 @@ def create_html_report(all_results, html_manager):
                 <li>2-hour changes in key weather variables</li>
                 <li>Historical measurements through lagged features</li>
             </ul>
+            <p><strong>Note:</strong> While we use data from multiple airports, our target variable is always KORD's temperature. The other airports' data serve as potential predictors for KORD's temperature.</p>
 
             <h4>Feature Engineering</h4>
             <p>For each airport in the dataset, we create the following feature groups:</p>
@@ -416,55 +334,55 @@ def create_html_report(all_results, html_manager):
                     <tbody>
                         <tr>
                             <td>{airport}_temp</td>
-                            <td>Temperature measurement</td>
+                            <td>Temperature measurement at {airport}</td>
                             <td>°C</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_windspeed</td>
-                            <td>Wind speed measurement</td>
+                            <td>Wind speed measurement at {airport}</td>
                             <td>m/s</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_winddirection</td>
-                            <td>Wind direction measurement</td>
+                            <td>Wind direction measurement at {airport}</td>
                             <td>degrees</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_humidity</td>
-                            <td>Humidity measurement</td>
+                            <td>Humidity measurement at {airport}</td>
                             <td>%</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_dew</td>
-                            <td>Dew point measurement</td>
+                            <td>Dew point measurement at {airport}</td>
                             <td>°C</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_sealevel</td>
-                            <td>Sea level pressure</td>
+                            <td>Sea level pressure at {airport}</td>
                             <td>hPa</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_visibility</td>
-                            <td>Visibility measurement</td>
+                            <td>Visibility measurement at {airport}</td>
                             <td>km</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_mincloud</td>
-                            <td>Minimum cloud coverage</td>
+                            <td>Minimum cloud coverage at {airport}</td>
                             <td>ft</td>
                             <td>Current</td>
                         </tr>
                         <tr>
                             <td>{airport}_maxcloud</td>
-                            <td>Maximum cloud coverage</td>
+                            <td>Maximum cloud coverage at {airport}</td>
                             <td>ft</td>
                             <td>Current</td>
                         </tr>
@@ -486,19 +404,19 @@ def create_html_report(all_results, html_manager):
                     <tbody>
                         <tr>
                             <td>{airport}_temp_2h_delta</td>
-                            <td>Change in temperature over last 2 hours</td>
+                            <td>Change in temperature over last 2 hours at {airport}</td>
                             <td>°C</td>
                             <td>2-hour window</td>
                         </tr>
                         <tr>
                             <td>{airport}_wind_dir_2h_delta</td>
-                            <td>Change in wind direction over last 2 hours</td>
+                            <td>Change in wind direction over last 2 hours at {airport}</td>
                             <td>degrees</td>
                             <td>2-hour window</td>
                         </tr>
                         <tr>
                             <td>{airport}_wind_vel_2h_delta</td>
-                            <td>Change in wind velocity over last 2 hours</td>
+                            <td>Change in wind velocity over last 2 hours at {airport}</td>
                             <td>m/s</td>
                             <td>2-hour window</td>
                         </tr>
@@ -547,7 +465,7 @@ def create_html_report(all_results, html_manager):
         
         section = f"""
         <div class="prediction-section">
-            <h3>{horizon} Temperature Prediction</h3>
+            <h3>{horizon} Temperature Prediction for KORD</h3>
             <div class="metrics-section">
                 <h4>Model Performance</h4>
                 <div class="data-list">
@@ -580,8 +498,8 @@ def create_html_report(all_results, html_manager):
         # Add prediction plot
         section += html_manager.create_section_with_image(
             plot_path,
-            f"{horizon} Predictions",
-            "The following plot shows the actual vs predicted temperatures. The blue line represents actual measurements, while the orange line shows our model's predictions."
+            f"{horizon} Predictions for KORD",
+            "The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from all airports."
         )
         
         # Add feature importance plot
@@ -603,10 +521,10 @@ def create_html_report(all_results, html_manager):
         <h3>Model Interpretation</h3>
         <p>These multivariate regression models capture the complex relationships between weather patterns across multiple airports and temperature at KORD. The models:</p>
         <ul>
-            <li>Consider the impact of weather conditions at all available airports</li>
+            <li>Use weather conditions from all available airports to predict KORD's temperature</li>
             <li>Account for recent changes in weather patterns through 2-hour delta features</li>
             <li>Incorporate historical weather patterns through lagged features</li>
-            <li>Provide insights into which airports and features most influence KORD's temperature</li>
+            <li>Help identify which airports' weather patterns most influence KORD's temperature</li>
         </ul>
         <p>Future improvements could include:</p>
         <ul>
@@ -646,8 +564,35 @@ def create_latex_report(all_results, output_dir):
             "Random State: 42 (for reproducibility)",
             "Validation: Standard train-test split"
         ]) +
-        "\n\n\\subsection{Data Structure}\n" +
-        "The dataset contains weather measurements from multiple airports, with each measurement prefixed by its airport code (e.g., KORD, KZZZ). For each airport, we track current weather measurements, 2-hour changes in key weather variables, and historical measurements through lagged features.\n\n" +
+        "\n\n\\subsection{Regressors (Predictor Variables)}\n" +
+        "Our model uses the following variables to predict KORD's temperature:\n\n" +
+        "\\subsubsection{KORD's Own Historical Data}\n" +
+        "\\begin{itemize}\n" +
+        "  \\item Temperature measurements from the past 24 hours (hourly lags)\n" +
+        "  \\item Temperature measurements from 48 hours ago (2-day lag)\n" +
+        "  \\item Temperature measurements from 120 hours ago (5-day lag)\n" +
+        "  \\item 5-day rolling average temperature (excluding current hour)\n" +
+        "\\end{itemize}\n\n" +
+        "\\subsubsection{Other Airports' Current and Historical Data}\n" +
+        "\\begin{itemize}\n" +
+        "  \\item Temperature measurements and their 24-hour lags\n" +
+        "  \\item Wind speed measurements and their 24-hour lags\n" +
+        "  \\item Wind direction measurements and their 24-hour lags\n" +
+        "  \\item Humidity measurements and their 24-hour lags\n" +
+        "  \\item Dew point measurements and their 24-hour lags\n" +
+        "  \\item Sea level pressure measurements and their 24-hour lags\n" +
+        "  \\item Visibility measurements and their 24-hour lags\n" +
+        "  \\item Cloud coverage measurements and their 24-hour lags\n" +
+        "\\end{itemize}\n\n" +
+        "\\subsubsection{2-Hour Change Features}\n" +
+        "\\begin{itemize}\n" +
+        "  \\item Temperature changes over the last 2 hours\n" +
+        "  \\item Wind direction changes over the last 2 hours\n" +
+        "  \\item Wind velocity changes over the last 2 hours\n" +
+        "\\end{itemize}\n\n" +
+        "Each of these features is calculated for every airport in our dataset, creating a rich set of predictors that capture both local and regional weather patterns.\n\n" +
+        "\\subsection{Data Structure}\n" +
+        "The dataset contains weather measurements from multiple airports, with each measurement prefixed by its airport code (e.g., KORD, KZZZ). For each airport, we track current weather measurements, 2-hour changes in key weather variables, and historical measurements through lagged features. While we use data from multiple airports, our target variable is always KORD's temperature. The other airports' data serve as potential predictors for KORD's temperature.\n\n" +
         "\\subsection{Feature Engineering}\n" +
         "For each airport in the dataset, we create the following feature groups:\n\n" +
         "\\subsubsection{Base Weather Features}\n" +
@@ -698,12 +643,12 @@ def create_latex_report(all_results, output_dir):
             'Metric': ['Root Mean Squared Error (RMSE)', 'Mean Absolute Error (MAE)', 'R^2 Score'],
             'Value': [metrics['RMSE'], metrics['MAE'], metrics['R2']]
         })
-        section = latex_subsection(f"{horizon} Temperature Prediction",
+        section = latex_subsection(f"{horizon} Temperature Prediction for KORD",
             latex_subsection("Model Performance",
                 df_to_latex_table(metrics_df, caption=f"{horizon} Metrics", label=f"tab:{horizon.replace(' ', '_').lower()}_metrics")
             ) +
             latex_subsection(f"{horizon} Predictions",
-                f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.7\\textwidth]{{{Path(plot_path).name}}}\n\\caption{{{horizon} Predictions}}\n\\label{{fig:{horizon.replace(' ', '_').lower()}_pred}}\n\\end{{figure}}\n"
+                f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.7\\textwidth]{{{Path(plot_path).name}}}\n\\caption{{{horizon} Predictions for KORD}}\n\\label{{fig:{horizon.replace(' ', '_').lower()}_pred}}\n\\end{{figure}}\n"
             ) +
             latex_subsection(f"{horizon} Feature Importance",
                 f"\\begin{{figure}}[htbp]\n\\centering\n\\includegraphics[width=0.7\\textwidth]{{{Path(feature_importance_plot).name}}}\n\\caption{{{horizon} Feature Importance}}\n\\label{{fig:{horizon.replace(' ', '_').lower()}_featimp}}\n\\end{{figure}}\n"
@@ -716,10 +661,10 @@ def create_latex_report(all_results, output_dir):
         """
 These multivariate regression models capture the complex relationships between weather patterns across multiple airports and temperature at KORD. The models:\\\\
 \\begin{itemize}
-  \\item Consider the impact of weather conditions at all available airports
+  \\item Use weather conditions from all available airports to predict KORD's temperature
   \\item Account for recent changes in weather patterns through 2-hour delta features
   \\item Incorporate historical weather patterns through lagged features
-  \\item Provide insights into which airports and features most influence KORD's temperature
+  \\item Help identify which airports' weather patterns most influence KORD's temperature
 \\end{itemize}
 Future improvements could include:\\\\
 \\begin{itemize}
