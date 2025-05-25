@@ -202,7 +202,7 @@ def plot_feature_importance(feature_importance, output_dir):
     plt.xlabel('Absolute Coefficient Value')
     plt.tight_layout()
     
-    plot_path = output_dir / 'feature_importance.png'
+    plot_path = output_dir / 'wind_feature_importance.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
     
@@ -383,17 +383,76 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, "1-linear_wind_regression.html")
     return html_content, output_path
 
+def save_latex_results(metrics, output_dir, suffix):
+    """
+    Save model results in LaTeX format
+    """
+    latex_content = f"""\\begin{{table}}[h]
+\\centering
+\\begin{{tabular}}{{lr}}
+\\hline
+\\textbf{{Metric}} & \\textbf{{Value}} \\\\
+\\hline
+RMSE & {metrics['RMSE']:.2f} \\\\
+MAE & {metrics['MAE']:.2f} \\\\
+R² Score & {metrics['R2']:.2f} \\\\
+\\hline
+\\end{{tabular}}
+\\caption{{Linear Wind Prediction Performance Metrics}}
+\\label{{tab:linear_wind_metrics_{suffix}}}
+\\end{{table}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{wind_prediction_results.png}}
+\\caption{{Linear Wind Prediction Results}}
+\\label{{fig:linear_wind_results_{suffix}}}
+\\end{{figure}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{wind_feature_importance.png}}
+\\caption{{Linear Wind Prediction Feature Importance}}
+\\label{{fig:linear_wind_importance_{suffix}}}
+\\end{{figure}}
+"""
+    
+    output_path = output_dir / f'linear_wind_results_{suffix}.tex'
+    with open(output_path, 'w') as f:
+        f.write(latex_content)
+    logger.info(f"Saved LaTeX results to {output_path}")
+    return output_path
+
+def save_prediction_results(datetime_test, y_test, y_pred, output_dir):
+    """
+    Save prediction results to CSV file
+    """
+    # Ensure 1D arrays
+    if hasattr(y_test, 'values'):
+        y_test = y_test.values
+    if hasattr(y_pred, 'values'):
+        y_pred = y_pred.values
+    y_test = np.ravel(y_test)
+    y_pred = np.ravel(y_pred)
+
+    results_df = pd.DataFrame({
+        'datetime': datetime_test,
+        'actual': y_test,
+        'predicted': y_pred,
+        'error': y_test - y_pred,
+        'abs_error': np.abs(y_test - y_pred)
+    })
+    output_path = output_dir / 'wind_prediction_results.csv'
+    results_df.to_csv(output_path, index=False)
+    logger.info(f"Saved prediction results to {output_path}")
+    return output_path
+
 def main():
     try:
-        # Create outputs directory
         output_dir = Path(__file__).parent / 'outputs'
         output_dir.mkdir(exist_ok=True)
-        
-        # Create HTML manager
         manager = HTMLManager()
         manager.register_section("KORD_Self_Regression", Path(__file__).parent)
-        
-        # Load and prepare data
         X, y, datetime, feature_cols = load_and_prepare_data()
         
         # Train model and get predictions
@@ -401,13 +460,21 @@ def main():
         
         # Plot results
         plot_path = plot_results(datetime_test, y_test, y_pred, output_dir)
-        
-        # Plot feature importance
         feature_importance_plot = plot_feature_importance(metrics['Feature_Importance'], output_dir)
+        csv_path = save_prediction_results(datetime_test, y_test, y_pred, output_dir)
+        latex_path = save_latex_results(metrics, output_dir, suffix="0")
+        all_results = {
+            'metrics': metrics,
+            'plot_path': plot_path,
+            'feature_importance_plot': feature_importance_plot,
+            'csv_path': csv_path,
+            'latex_path': latex_path
+        }
+        logger.info("Wind prediction analysis complete")
         
         # Create HTML report
         html_content, output_path = create_html_report(metrics, plot_path, feature_importance_plot, manager)
-        logger.info(f"Analysis complete. Results saved to {output_path}")
+        logger.info(f"All wind prediction analyses complete. Results saved to {output_path}")
         
     except Exception as e:
         logger.error(f"Error in wind prediction analysis: {str(e)}")

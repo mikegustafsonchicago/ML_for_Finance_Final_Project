@@ -259,7 +259,7 @@ def plot_results(datetime_test, y_test, y_pred, output_dir):
     Plot actual vs predicted values for a specific week (e.g., April 1-7, 2020)
     """
     logger.info("Starting plot_results...")
-    # Ensure all columns are 1-dimensional
+    # Ensure all arrays are 1-dimensional
     if isinstance(y_pred, np.ndarray) and y_pred.ndim > 1:
         y_pred = y_pred.ravel()
     if isinstance(y_test, (np.ndarray, pd.Series)) and hasattr(y_test, 'values') and y_test.ndim > 1:
@@ -506,6 +506,70 @@ def create_html_report(metrics, plot_path, feature_importance_plot, html_manager
     output_path = html_manager.save_section_html("KORD_Self_Regression", html_content, "4-neural_net_wind_regression.html")
     return html_content, output_path
 
+def save_latex_results(metrics, output_dir, suffix):
+    """
+    Save model results in LaTeX format
+    """
+    latex_content = f"""\\begin{{table}}[h]
+\\centering
+\\begin{{tabular}}{{lr}}
+\\hline
+\\textbf{{Metric}} & \\textbf{{Value}} \\\\
+\\hline
+RMSE & {metrics['RMSE']:.2f} \\\\
+MAE & {metrics['MAE']:.2f} \\\\
+R² Score & {metrics['R2']:.2f} \\\\
+\\hline
+\\end{{tabular}}
+\\caption{{Neural Network Wind Prediction Performance Metrics}}
+\\label{{tab:neural_net_wind_metrics_{suffix}}}
+\\end{{table}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{4-neural_net_wind_regression_results.png}}
+\\caption{{Neural Network Wind Prediction Results}}
+\\label{{fig:neural_net_wind_results_{suffix}}}
+\\end{{figure}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{4-neural_net_wind_feature_importance.png}}
+\\caption{{Neural Network Wind Prediction Feature Importance}}
+\\label{{fig:neural_net_wind_importance_{suffix}}}
+\\end{{figure}}
+"""
+    
+    output_path = output_dir / f'4-neural_net_wind_results_{suffix}.tex'
+    with open(output_path, 'w') as f:
+        f.write(latex_content)
+    logger.info(f"Saved LaTeX results to {output_path}")
+    return output_path
+
+def save_prediction_results(datetime_test, y_test, y_pred, output_dir):
+    """
+    Save prediction results to CSV file
+    """
+    # Ensure 1D arrays
+    if hasattr(y_test, 'values'):
+        y_test = y_test.values
+    if hasattr(y_pred, 'values'):
+        y_pred = y_pred.values
+    y_test = np.ravel(y_test)
+    y_pred = np.ravel(y_pred)
+
+    results_df = pd.DataFrame({
+        'datetime': datetime_test,
+        'actual': y_test,
+        'predicted': y_pred,
+        'error': y_test - y_pred,
+        'abs_error': np.abs(y_test - y_pred)
+    })
+    output_path = output_dir / '4-neural_net_wind_prediction_results.csv'
+    results_df.to_csv(output_path, index=False)
+    logger.info(f"Saved prediction results to {output_path}")
+    return output_path
+
 def main():
     try:
         logger.info("Starting main wind prediction analysis pipeline...")
@@ -545,6 +609,16 @@ def main():
         logger.info("Creating HTML report...")
         html_content, output_path = create_html_report(metrics, plot_path, feature_importance_plot, manager)
         logger.info(f"Analysis complete. Results saved to {output_path}")
+        
+        # Save LaTeX results
+        logger.info("Saving LaTeX results...")
+        latex_path = save_latex_results(metrics, output_dir, suffix="0")
+        logger.info(f"LaTeX results saved to {latex_path}")
+        
+        # Save prediction results
+        logger.info("Saving prediction results...")
+        prediction_path = save_prediction_results(datetime_test, y_test, y_pred, output_dir)
+        logger.info(f"Prediction results saved to {prediction_path}")
         
     except Exception as e:
         logger.error(f"Error in wind prediction analysis: {str(e)}")

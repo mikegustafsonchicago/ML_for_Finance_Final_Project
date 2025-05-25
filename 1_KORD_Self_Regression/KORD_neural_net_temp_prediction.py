@@ -242,6 +242,9 @@ def train_model(X, y, datetime):
     return model, X_test, y_test, y_pred, datetime_test, metrics
 
 def plot_results(datetime_test, y_test, y_pred, output_dir, suffix):
+    """
+    Plot actual vs predicted values for a specific week (e.g., April 1-7, 2020)
+    """
     # Ensure all arrays are 1-dimensional
     y_test = y_test.flatten() if hasattr(y_test, 'flatten') else y_test
     y_pred = y_pred.flatten() if hasattr(y_pred, 'flatten') else y_pred
@@ -251,45 +254,33 @@ def plot_results(datetime_test, y_test, y_pred, output_dir, suffix):
         'actual': y_test,
         'predicted': y_pred
     })
-    # Define time windows based on prediction type
-    if suffix == "0":  # 1 hour ahead
-        start_date = pd.Timestamp('2020-04-01')
-        end_date = pd.Timestamp('2020-04-07 23:59:59')
-        title = "Temperature Prediction: April 1-7, 2020 (1 Hour Ahead)"
-    elif suffix == "1":  # 24 hours ahead
-        start_date = pd.Timestamp('2020-04-01')
-        end_date = pd.Timestamp('2020-04-07 23:59:59')
-        title = "Temperature Prediction: April 1-7, 2020 (24 Hours Ahead)"
-    elif suffix == "2":  # 120 hours ahead
-        start_date = pd.Timestamp('2020-04-01')
-        end_date = pd.Timestamp('2020-04-15 23:59:59')
-        title = "Temperature Prediction: April 1-15, 2020 (5 Days Ahead)"
-    elif suffix == "3":  # 5-day average
-        start_date = pd.Timestamp('2020-04-01')
-        end_date = pd.Timestamp('2020-04-30 23:59:59')
-        title = "Temperature Prediction: April 2020 (5-Day Average)"
-    else:  # 30-day average
-        start_date = pd.Timestamp('2020-04-01')
-        end_date = pd.Timestamp('2020-05-31 23:59:59')
-        title = "Temperature Prediction: April-May 2020 (30-Day Average)"
-    period_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
-    if period_data.empty:
-        logger.warning(f"No data found for the specified period ({start_date} to {end_date}).")
+
+    # Select a specific week: April 1-7, 2020
+    start_date = pd.Timestamp('2020-04-01')
+    end_date = pd.Timestamp('2020-04-07 23:59:59')
+    week_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
+
+    if week_data.empty:
+        logger.warning("No data found for the specified week (April 1-7, 2020).")
         return None
-    period_data = period_data.sort_values('datetime')
-    plt.figure(figsize=(12, 6))
-    plt.plot(period_data['datetime'], period_data['actual'], label='Actual', alpha=0.7)
-    plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
-    plt.title(title)
+
+    # Sort by datetime to ensure correct plotting order
+    week_data = week_data.sort_values('datetime')
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(week_data['datetime'], week_data['actual'], label='Actual', alpha=0.7)
+    plt.plot(week_data['datetime'], week_data['predicted'], label='Predicted', alpha=0.7)
+    plt.title('Temperature Prediction: April 1-7, 2020')
     plt.xlabel('Date')
     plt.ylabel('Temperature (°C)')
     plt.legend()
     plt.xticks(rotation=45)
-    plt.grid(True, alpha=0.3)
     plt.tight_layout()
+
     plot_path = output_dir / f'6-3-{suffix}-neural_net_temp_prediction_results.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
+
     return plot_path
 
 def plot_feature_importance(feature_importance, output_dir, suffix):
@@ -528,6 +519,46 @@ def save_prediction_results(datetime_test, y_test, y_pred, output_dir, suffix):
     logger.info(f"Saved prediction results to {output_path}")
     return output_path
 
+def save_latex_results(metrics, output_dir, suffix):
+    """
+    Save model results in LaTeX format
+    """
+    latex_content = f"""\\begin{{table}}[h]
+\\centering
+\\begin{{tabular}}{{lr}}
+\\hline
+\\textbf{{Metric}} & \\textbf{{Value}} \\\\
+\\hline
+RMSE & {metrics['RMSE']:.2f} \\\\
+MAE & {metrics['MAE']:.2f} \\\\
+R² Score & {metrics['R2']:.2f} \\\\
+\\hline
+\\end{{tabular}}
+\\caption{{Neural Network Temperature Prediction Performance Metrics}}
+\\label{{tab:neural_net_temp_metrics_{suffix}}}
+\\end{{table}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{6-3-{suffix}-neural_net_temp_prediction_results.png}}
+\\caption{{Neural Network Temperature Prediction Results}}
+\\label{{fig:neural_net_temp_results_{suffix}}}
+\\end{{figure}}
+
+\\begin{{figure}}[h]
+\\centering
+\\includegraphics[width=0.8\\textwidth]{{6-3-{suffix}-neural_net_temp_feature_importance.png}}
+\\caption{{Neural Network Temperature Prediction Feature Importance}}
+\\label{{fig:neural_net_temp_importance_{suffix}}}
+\\end{{figure}}
+"""
+    
+    output_path = output_dir / f'6-3-{suffix}-neural_net_temp_results.tex'
+    with open(output_path, 'w') as f:
+        f.write(latex_content)
+    logger.info(f"Saved LaTeX results to {output_path}")
+    return output_path
+
 def main():
     try:
         output_dir = Path(__file__).parent / 'outputs'
@@ -544,11 +575,13 @@ def main():
         plot_path_1h = plot_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, suffix="0")
         feature_importance_plot_1h = plot_feature_importance(metrics_1h['Feature_Importance'], output_dir, suffix="0")
         csv_path_1h = save_prediction_results(datetime_test_1h, y_test_1h, y_pred_1h, output_dir, suffix="0")
+        latex_path_1h = save_latex_results(metrics_1h, output_dir, suffix="0")
         all_results["1 Hour Ahead"] = {
             'metrics': metrics_1h,
             'plot_path': plot_path_1h,
             'feature_importance_plot': feature_importance_plot_1h,
-            'csv_path': csv_path_1h
+            'csv_path': csv_path_1h,
+            'latex_path': latex_path_1h
         }
         logger.info("1-hour prediction analysis complete")
         
@@ -557,11 +590,13 @@ def main():
         plot_path_24h = plot_results(datetime_test_24h, y_test_24h, y_pred_24h, output_dir, suffix="1")
         feature_importance_plot_24h = plot_feature_importance(metrics_24h['Feature_Importance'], output_dir, suffix="1")
         csv_path_24h = save_prediction_results(datetime_test_24h, y_test_24h, y_pred_24h, output_dir, suffix="1")
+        latex_path_24h = save_latex_results(metrics_24h, output_dir, suffix="1")
         all_results["24 Hours Ahead"] = {
             'metrics': metrics_24h,
             'plot_path': plot_path_24h,
             'feature_importance_plot': feature_importance_plot_24h,
-            'csv_path': csv_path_24h
+            'csv_path': csv_path_24h,
+            'latex_path': latex_path_24h
         }
         logger.info("24-hour prediction analysis complete")
         
@@ -570,11 +605,13 @@ def main():
         plot_path_120h = plot_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, suffix="2")
         feature_importance_plot_120h = plot_feature_importance(metrics_120h['Feature_Importance'], output_dir, suffix="2")
         csv_path_120h = save_prediction_results(datetime_test_120h, y_test_120h, y_pred_120h, output_dir, suffix="2")
+        latex_path_120h = save_latex_results(metrics_120h, output_dir, suffix="2")
         all_results["120 Hours (5 Days) Ahead"] = {
             'metrics': metrics_120h,
             'plot_path': plot_path_120h,
             'feature_importance_plot': feature_importance_plot_120h,
-            'csv_path': csv_path_120h
+            'csv_path': csv_path_120h,
+            'latex_path': latex_path_120h
         }
         logger.info("120-hour prediction analysis complete")
         
@@ -583,11 +620,13 @@ def main():
         plot_path_5d_avg = plot_results(datetime_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, output_dir, suffix="3")
         feature_importance_plot_5d_avg = plot_feature_importance(metrics_5d_avg['Feature_Importance'], output_dir, suffix="3")
         csv_path_5d_avg = save_prediction_results(datetime_test_5d_avg, y_test_5d_avg, y_pred_5d_avg, output_dir, suffix="3")
+        latex_path_5d_avg = save_latex_results(metrics_5d_avg, output_dir, suffix="3")
         all_results["5-Day Average Ahead"] = {
             'metrics': metrics_5d_avg,
             'plot_path': plot_path_5d_avg,
             'feature_importance_plot': feature_importance_plot_5d_avg,
-            'csv_path': csv_path_5d_avg
+            'csv_path': csv_path_5d_avg,
+            'latex_path': latex_path_5d_avg
         }
         logger.info("5-day average prediction analysis complete")
         
@@ -596,11 +635,13 @@ def main():
         plot_path_30d_avg = plot_results(datetime_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, output_dir, suffix="4")
         feature_importance_plot_30d_avg = plot_feature_importance(metrics_30d_avg['Feature_Importance'], output_dir, suffix="4")
         csv_path_30d_avg = save_prediction_results(datetime_test_30d_avg, y_test_30d_avg, y_pred_30d_avg, output_dir, suffix="4")
+        latex_path_30d_avg = save_latex_results(metrics_30d_avg, output_dir, suffix="4")
         all_results["30-Day Average Ahead"] = {
             'metrics': metrics_30d_avg,
             'plot_path': plot_path_30d_avg,
             'feature_importance_plot': feature_importance_plot_30d_avg,
-            'csv_path': csv_path_30d_avg
+            'csv_path': csv_path_30d_avg,
+            'latex_path': latex_path_30d_avg
         }
         logger.info("30-day average prediction analysis complete")
         
