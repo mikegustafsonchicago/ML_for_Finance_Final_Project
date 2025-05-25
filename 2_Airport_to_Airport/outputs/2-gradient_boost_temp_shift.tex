@@ -1,11 +1,12 @@
-\section{KORD Temperature Prediction Using Selected Airport Features}
+\section{KORD Temperature Prediction Using Selected Airport Features (Gradient Boosting)}
 This analysis implements multivariate time series regression models to predict temperature at Chicago O'Hare International Airport (KORD) using weather data from selected airports. The model incorporates both historical data and recent changes in weather patterns across these airports.\n\begin{itemize}
-  \item Base Model: Multivariate Linear Regression
+  \item Base Model: Gradient Boosting Regressor
   \item Feature Engineering: Airport-specific features with time lags and 2-hour changes
   \item Prediction Horizons: Multiple time windows (1h, 24h, 5d, 5d avg, 30d avg)
   \item Train/Test Split: 80/20
   \item Random State: 42 (for reproducibility)
   \item Validation: Standard train-test split
+  \item Model Parameters: 100 estimators, max depth of 4
 \end{itemize}
 
 \subsection{1 Hour Ahead Temperature Prediction for KORD}
@@ -14,16 +15,16 @@ This analysis implements multivariate time series regression models to predict t
 \toprule
  & Metric & Value \\
 \midrule
-0 & Root Mean Squared Error (RMSE) & 4.82 \\
-1 & Mean Absolute Error (MAE) & 3.13 \\
-2 & R^2 Score & 0.82 \\
+0 & Root Mean Squared Error (RMSE) & 1.10 \\
+1 & Mean Absolute Error (MAE) & 0.80 \\
+2 & R^2 Score & 0.99 \\
 \bottomrule
 \end{tabular}
 
 \subsection{1 Hour Ahead Predictions}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-0-neural_net_temp_shift_results.png}
+\includegraphics[width=0.7\textwidth]{2-0-gradient_boost_temp_shift_results.png}
 \caption{1 Hour Ahead Predictions for KORD}
 \label{fig:1_hour_ahead_pred}
 \end{figure}
@@ -31,7 +32,7 @@ This analysis implements multivariate time series regression models to predict t
 \subsection{1 Hour Ahead Feature Importance}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-0-neural_net_temp_shift_feature_importance.png}
+\includegraphics[width=0.7\textwidth]{2-0-gradient_boost_temp_shift_feature_importance.png}
 \caption{1 Hour Ahead Feature Importance}
 \label{fig:1_hour_ahead_featimp}
 \end{figure}
@@ -44,16 +45,16 @@ This analysis implements multivariate time series regression models to predict t
 \toprule
  & Metric & Value \\
 \midrule
-0 & Root Mean Squared Error (RMSE) & 7.28 \\
-1 & Mean Absolute Error (MAE) & 5.34 \\
-2 & R^2 Score & 0.59 \\
+0 & Root Mean Squared Error (RMSE) & 3.50 \\
+1 & Mean Absolute Error (MAE) & 2.68 \\
+2 & R^2 Score & 0.91 \\
 \bottomrule
 \end{tabular}
 
 \subsection{24 Hours Ahead Predictions}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-1-neural_net_temp_shift_results.png}
+\includegraphics[width=0.7\textwidth]{2-1-gradient_boost_temp_shift_results.png}
 \caption{24 Hours Ahead Predictions for KORD}
 \label{fig:24_hours_ahead_pred}
 \end{figure}
@@ -61,7 +62,7 @@ This analysis implements multivariate time series regression models to predict t
 \subsection{24 Hours Ahead Feature Importance}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-1-neural_net_temp_shift_feature_importance.png}
+\includegraphics[width=0.7\textwidth]{2-1-gradient_boost_temp_shift_feature_importance.png}
 \caption{24 Hours Ahead Feature Importance}
 \label{fig:24_hours_ahead_featimp}
 \end{figure}
@@ -74,16 +75,16 @@ This analysis implements multivariate time series regression models to predict t
 \toprule
  & Metric & Value \\
 \midrule
-0 & Root Mean Squared Error (RMSE) & 12.60 \\
-1 & Mean Absolute Error (MAE) & 10.33 \\
-2 & R^2 Score & -0.23 \\
+0 & Root Mean Squared Error (RMSE) & 4.90 \\
+1 & Mean Absolute Error (MAE) & 3.83 \\
+2 & R^2 Score & 0.81 \\
 \bottomrule
 \end{tabular}
 
 \subsection{120 Hours (5 Days) Ahead Predictions}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-2-neural_net_temp_shift_results.png}
+\includegraphics[width=0.7\textwidth]{2-2-gradient_boost_temp_shift_results.png}
 \caption{120 Hours (5 Days) Ahead Predictions for KORD}
 \label{fig:120_hours_(5_days)_ahead_pred}
 \end{figure}
@@ -91,7 +92,7 @@ This analysis implements multivariate time series regression models to predict t
 \subsection{120 Hours (5 Days) Ahead Feature Importance}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-2-neural_net_temp_shift_feature_importance.png}
+\includegraphics[width=0.7\textwidth]{2-2-gradient_boost_temp_shift_feature_importance.png}
 \caption{120 Hours (5 Days) Ahead Feature Importance}
 \label{fig:120_hours_(5_days)_ahead_featimp}
 \end{figure}
@@ -104,16 +105,16 @@ This analysis implements multivariate time series regression models to predict t
 \toprule
  & Metric & Value \\
 \midrule
-0 & Root Mean Squared Error (RMSE) & 12.86 \\
-1 & Mean Absolute Error (MAE) & 11.11 \\
-2 & R^2 Score & -0.47 \\
+0 & Root Mean Squared Error (RMSE) & 2.81 \\
+1 & Mean Absolute Error (MAE) & 2.19 \\
+2 & R^2 Score & 0.93 \\
 \bottomrule
 \end{tabular}
 
 \subsection{5-Day Average Ahead Predictions}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-3-neural_net_temp_shift_results.png}
+\includegraphics[width=0.7\textwidth]{2-3-gradient_boost_temp_shift_results.png}
 \caption{5-Day Average Ahead Predictions for KORD}
 \label{fig:5-day_average_ahead_pred}
 \end{figure}
@@ -121,7 +122,7 @@ This analysis implements multivariate time series regression models to predict t
 \subsection{5-Day Average Ahead Feature Importance}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-3-neural_net_temp_shift_feature_importance.png}
+\includegraphics[width=0.7\textwidth]{2-3-gradient_boost_temp_shift_feature_importance.png}
 \caption{5-Day Average Ahead Feature Importance}
 \label{fig:5-day_average_ahead_featimp}
 \end{figure}
@@ -134,16 +135,16 @@ This analysis implements multivariate time series regression models to predict t
 \toprule
  & Metric & Value \\
 \midrule
-0 & Root Mean Squared Error (RMSE) & 13.87 \\
-1 & Mean Absolute Error (MAE) & 12.05 \\
-2 & R^2 Score & -0.94 \\
+0 & Root Mean Squared Error (RMSE) & 2.88 \\
+1 & Mean Absolute Error (MAE) & 2.22 \\
+2 & R^2 Score & 0.92 \\
 \bottomrule
 \end{tabular}
 
 \subsection{30-Day Average Ahead Predictions}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-4-neural_net_temp_shift_results.png}
+\includegraphics[width=0.7\textwidth]{2-4-gradient_boost_temp_shift_results.png}
 \caption{30-Day Average Ahead Predictions for KORD}
 \label{fig:30-day_average_ahead_pred}
 \end{figure}
@@ -151,7 +152,7 @@ This analysis implements multivariate time series regression models to predict t
 \subsection{30-Day Average Ahead Feature Importance}
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.7\textwidth]{4-4-neural_net_temp_shift_feature_importance.png}
+\includegraphics[width=0.7\textwidth]{2-4-gradient_boost_temp_shift_feature_importance.png}
 \caption{30-Day Average Ahead Feature Importance}
 \label{fig:30-day_average_ahead_featimp}
 \end{figure}
@@ -159,7 +160,7 @@ This analysis implements multivariate time series regression models to predict t
 
 \section{Model Interpretation}
 
-These multivariate regression models capture the complex relationships between weather patterns across multiple airports and temperature at KORD. The models:\
+These gradient boosting models capture the complex relationships between weather patterns across multiple airports and temperature at KORD. The models:\
 egin{itemize}
   \item Use weather conditions from selected airports to predict KORD's temperature
   \item Account for recent changes in weather patterns through 2-hour delta features
@@ -169,7 +170,7 @@ These multivariate regression models capture the complex relationships between w
 Future improvements could include:\
 egin{itemize}
   \item Feature selection to reduce dimensionality
-  \item Non-linear models to capture complex relationships
+  \item Hyperparameter tuning for the gradient boosting model
   \item Time series specific models (ARIMA, LSTM)
   \item Spatial relationship modeling between airports
 \end{itemize}

@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KORD Temperature Prediction Using KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW Features</title>
+    <title>KORD Temperature Prediction Using KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW Features (Random Forest)</title>
     <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
     <div class="container">
         
     <div class="model-report">
-        <h2>KORD Temperature Prediction Using Selected Airport Features</h2>
+        <h2>KORD Temperature Prediction Using Selected Airport Features (Random Forest)</h2>
         <div class="model-description">
             <h3>Model Architecture</h3>
             <p>This analysis implements multivariate time series regression models to predict temperature at Chicago O'Hare International Airport (KORD) using weather data from <b>selected airports in the dataset</b>. The model incorporates both historical data and recent changes in weather patterns from these regressor airports.</p>
@@ -26,77 +26,6 @@
                 <li>Number of rows: 62795</li>
                 <li>Number of features: 2220</li>
                 <li>Time period: 2018-01-01 00:00:00 to 2025-03-01 22:00:00</li>
-            </ul>
-            <h4>Data Reshaping Process</h4>
-            <p>The data undergoes several transformations to create our feature set:</p>
-            <ol>
-                <li><strong>Initial Data Loading:</strong>
-                    <ul>
-                        <li>Load data for KORD (target) and selected airports (regressors)</li>
-                        <li>Sort data by datetime to ensure proper time series analysis</li>
-                    </ul>
-                </li>
-                <li><strong>Pivot Table Creation:</strong>
-                    <ul>
-                        <li>Create a pivot table with datetime as the index</li>
-                        <li>Columns are renamed to follow the pattern: [AIRPORT]_[FEATURE]</li>
-                        <li>Example: [AIRPORT]_temp, [AIRPORT]_windspeed, etc.</li>
-                    </ul>
-                </li>
-                <li><strong>Feature Engineering:</strong>
-                    <ul>
-                        <li>Calculate 2-hour deltas for each regressor airport</li>
-                        <li>Create lagged features for each weather measurement</li>
-                        <li>Generate rolling averages for temperature</li>
-                    </ul>
-                </li>
-            </ol>
-            <h4>Feature Names and Structure</h4>
-            <p>For each regressor airport, we create the following features:</p>
-            <ul>
-                <li><strong>Current Weather Measurements:</strong>
-                    <ul>
-                        <li>Temperature (e.g., [AIRPORT]_temp)</li>
-                        <li>Wind speed (e.g., [AIRPORT]_windspeed)</li>
-                        <li>Wind direction (e.g., [AIRPORT]_winddirection)</li>
-                        <li>Humidity (e.g., [AIRPORT]_humidity)</li>
-                        <li>Dew point (e.g., [AIRPORT]_dew)</li>
-                        <li>Sea level pressure (e.g., [AIRPORT]_sealevel)</li>
-                        <li>Visibility (e.g., [AIRPORT]_visibility)</li>
-                        <li>Cloud coverage (e.g., [AIRPORT]_mincloud, [AIRPORT]_maxcloud)</li>
-                    </ul>
-                </li>
-                <li><strong>2-Hour Change Features:</strong>
-                    <ul>
-                        <li>Temperature changes (e.g., [AIRPORT]_temp_2h_delta)</li>
-                        <li>Wind direction changes (e.g., [AIRPORT]_wind_dir_2h_delta)</li>
-                        <li>Wind velocity changes (e.g., [AIRPORT]_wind_vel_2h_delta)</li>
-                    </ul>
-                </li>
-                <li><strong>Historical Features:</strong>
-                    <ul>
-                        <li>Hourly lags (1-24 hours) for each measurement</li>
-                        <li>2-day lag (48 hours) for temperature</li>
-                        <li>5-day lag (120 hours) for temperature</li>
-                        <li>5-day rolling average temperature</li>
-                    </ul>
-                </li>
-            </ul>
-            <p>Each feature is calculated for every regressor airport, creating a rich set of predictors that capture weather patterns from multiple locations.</p>
-            <h4>Target Variable</h4>
-            <p>The model predicts KORD's temperature at various time horizons:</p>
-            <ul>
-                <li>1 hour ahead</li>
-                <li>24 hours ahead</li>
-                <li>5 days ahead</li>
-                <li>5-day average ahead</li>
-                <li>30-day average ahead</li>
-            </ul>
-            <h4>Training Configuration</h4>
-            <ul>
-                <li><strong>Train/Test Split:</strong> 80/20</li>
-                <li><strong>Random State:</strong> 42 (for reproducibility)</li>
-                <li><strong>Validation:</strong> Standard train-test split</li>
             </ul>
         </div>
     </div>
@@ -116,15 +45,15 @@
                         <tbody>
                             <tr>
                                 <td>Root Mean Squared Error (RMSE)</td>
-                                <td>4.82</td>
+                                <td>1.32</td>
                             </tr>
                             <tr>
                                 <td>Mean Absolute Error (MAE)</td>
-                                <td>3.13</td>
+                                <td>0.97</td>
                             </tr>
                             <tr>
                                 <td>R² Score</td>
-                                <td>0.82</td>
+                                <td>0.99</td>
                             </tr>
                         </tbody>
                     </table>
@@ -134,19 +63,19 @@
         <div class="section">
             <h3>1 Hour Ahead Predictions for KORD</h3>
             <p>The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-0-neural_net_temp_shift_results.png" alt="1 Hour Ahead Predictions for KORD">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-0-random_forest_temp_shift_results.png" alt="1 Hour Ahead Predictions for KORD">
         </div>
         
         <div class="section">
             <h3>1 Hour Ahead Feature Importance</h3>
             <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-0-neural_net_temp_shift_feature_importance.png" alt="1 Hour Ahead Feature Importance">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-0-random_forest_temp_shift_feature_importance.png" alt="1 Hour Ahead Feature Importance">
         </div>
         
         <div class="section">
             <h3>1 Hour Ahead Feature Importance Map</h3>
             <p>This map shows the spatial distribution of the top 10 most important features across the selected airports.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-feature_importance_map_1h.png" alt="1 Hour Ahead Feature Importance Map">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-feature_importance_map_1h.png" alt="1 Hour Ahead Feature Importance Map">
         </div>
         </div>
 
@@ -165,15 +94,15 @@
                         <tbody>
                             <tr>
                                 <td>Root Mean Squared Error (RMSE)</td>
-                                <td>7.28</td>
+                                <td>3.63</td>
                             </tr>
                             <tr>
                                 <td>Mean Absolute Error (MAE)</td>
-                                <td>5.34</td>
+                                <td>2.79</td>
                             </tr>
                             <tr>
                                 <td>R² Score</td>
-                                <td>0.59</td>
+                                <td>0.90</td>
                             </tr>
                         </tbody>
                     </table>
@@ -183,19 +112,19 @@
         <div class="section">
             <h3>24 Hours Ahead Predictions for KORD</h3>
             <p>The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-1-neural_net_temp_shift_results.png" alt="24 Hours Ahead Predictions for KORD">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-1-random_forest_temp_shift_results.png" alt="24 Hours Ahead Predictions for KORD">
         </div>
         
         <div class="section">
             <h3>24 Hours Ahead Feature Importance</h3>
             <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-1-neural_net_temp_shift_feature_importance.png" alt="24 Hours Ahead Feature Importance">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-1-random_forest_temp_shift_feature_importance.png" alt="24 Hours Ahead Feature Importance">
         </div>
         
         <div class="section">
             <h3>24 Hours Ahead Feature Importance Map</h3>
             <p>This map shows the spatial distribution of the top 10 most important features across the selected airports.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-feature_importance_map_24h.png" alt="24 Hours Ahead Feature Importance Map">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-feature_importance_map_24h.png" alt="24 Hours Ahead Feature Importance Map">
         </div>
         </div>
 
@@ -214,15 +143,15 @@
                         <tbody>
                             <tr>
                                 <td>Root Mean Squared Error (RMSE)</td>
-                                <td>12.60</td>
+                                <td>4.88</td>
                             </tr>
                             <tr>
                                 <td>Mean Absolute Error (MAE)</td>
-                                <td>10.33</td>
+                                <td>3.83</td>
                             </tr>
                             <tr>
                                 <td>R² Score</td>
-                                <td>-0.23</td>
+                                <td>0.82</td>
                             </tr>
                         </tbody>
                     </table>
@@ -232,19 +161,19 @@
         <div class="section">
             <h3>120 Hours (5 Days) Ahead Predictions for KORD</h3>
             <p>The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-2-neural_net_temp_shift_results.png" alt="120 Hours (5 Days) Ahead Predictions for KORD">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-2-random_forest_temp_shift_results.png" alt="120 Hours (5 Days) Ahead Predictions for KORD">
         </div>
         
         <div class="section">
             <h3>120 Hours (5 Days) Ahead Feature Importance</h3>
             <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-2-neural_net_temp_shift_feature_importance.png" alt="120 Hours (5 Days) Ahead Feature Importance">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-2-random_forest_temp_shift_feature_importance.png" alt="120 Hours (5 Days) Ahead Feature Importance">
         </div>
         
         <div class="section">
             <h3>120 Hours (5 Days) Ahead Feature Importance Map</h3>
             <p>This map shows the spatial distribution of the top 10 most important features across the selected airports.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-feature_importance_map_120h.png" alt="120 Hours (5 Days) Ahead Feature Importance Map">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-feature_importance_map_120h.png" alt="120 Hours (5 Days) Ahead Feature Importance Map">
         </div>
         </div>
 
@@ -263,15 +192,15 @@
                         <tbody>
                             <tr>
                                 <td>Root Mean Squared Error (RMSE)</td>
-                                <td>12.86</td>
+                                <td>2.84</td>
                             </tr>
                             <tr>
                                 <td>Mean Absolute Error (MAE)</td>
-                                <td>11.11</td>
+                                <td>2.21</td>
                             </tr>
                             <tr>
                                 <td>R² Score</td>
-                                <td>-0.47</td>
+                                <td>0.93</td>
                             </tr>
                         </tbody>
                     </table>
@@ -281,19 +210,19 @@
         <div class="section">
             <h3>5-Day Average Ahead Predictions for KORD</h3>
             <p>The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-3-neural_net_temp_shift_results.png" alt="5-Day Average Ahead Predictions for KORD">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-3-random_forest_temp_shift_results.png" alt="5-Day Average Ahead Predictions for KORD">
         </div>
         
         <div class="section">
             <h3>5-Day Average Ahead Feature Importance</h3>
             <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-3-neural_net_temp_shift_feature_importance.png" alt="5-Day Average Ahead Feature Importance">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-3-random_forest_temp_shift_feature_importance.png" alt="5-Day Average Ahead Feature Importance">
         </div>
         
         <div class="section">
             <h3>5-Day Average Ahead Feature Importance Map</h3>
             <p>This map shows the spatial distribution of the top 10 most important features across the selected airports.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-feature_importance_map_5d_avg.png" alt="5-Day Average Ahead Feature Importance Map">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-feature_importance_map_5d_avg.png" alt="5-Day Average Ahead Feature Importance Map">
         </div>
         </div>
 
@@ -312,15 +241,15 @@
                         <tbody>
                             <tr>
                                 <td>Root Mean Squared Error (RMSE)</td>
-                                <td>13.87</td>
+                                <td>2.96</td>
                             </tr>
                             <tr>
                                 <td>Mean Absolute Error (MAE)</td>
-                                <td>12.05</td>
+                                <td>2.31</td>
                             </tr>
                             <tr>
                                 <td>R² Score</td>
-                                <td>-0.94</td>
+                                <td>0.91</td>
                             </tr>
                         </tbody>
                     </table>
@@ -330,39 +259,21 @@
         <div class="section">
             <h3>30-Day Average Ahead Predictions for KORD</h3>
             <p>The following plot shows the actual vs predicted temperatures for KORD. The blue line represents actual measurements at KORD, while the orange line shows our model's predictions using data from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-4-neural_net_temp_shift_results.png" alt="30-Day Average Ahead Predictions for KORD">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-4-random_forest_temp_shift_results.png" alt="30-Day Average Ahead Predictions for KORD">
         </div>
         
         <div class="section">
             <h3>30-Day Average Ahead Feature Importance</h3>
             <p>This plot shows the top 10 most important features based on their absolute coefficient values in the regression model.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-4-neural_net_temp_shift_feature_importance.png" alt="30-Day Average Ahead Feature Importance">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-4-random_forest_temp_shift_feature_importance.png" alt="30-Day Average Ahead Feature Importance">
         </div>
         
         <div class="section">
             <h3>30-Day Average Ahead Feature Importance Map</h3>
             <p>This map shows the spatial distribution of the top 10 most important features across the selected airports.</p>
-            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\4-feature_importance_map_30d_avg.png" alt="30-Day Average Ahead Feature Importance Map">
+            <img src="C:\Users\mikeg\OneDrive\Documents-Old\Booth\ML_for_Finance\Final\2_Airport_to_Airport\outputs\3-feature_importance_map_30d_avg.png" alt="30-Day Average Ahead Feature Importance Map">
         </div>
         </div>
-    <div class="interpretation-section">
-        <h3>Model Interpretation</h3>
-        <p>These multivariate regression models capture the complex relationships between weather patterns at KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW to predict KORD's temperature. The models:</p>
-        <ul>
-            <li>Use weather conditions from KRZL, KMWC, KIGQ, KPNT, KOXI, KIKK, KDKB, KPPO, KBUU, KMDW to predict KORD's temperature</li>
-            <li>Account for recent changes in weather patterns through 2-hour delta features</li>
-            <li>Incorporate historical weather patterns through lagged features</li>
-            <li>Help identify which weather patterns from the regressor airports most influence KORD's temperature</li>
-        </ul>
-        <p>Future improvements could include:</p>
-        <ul>
-            <li>Feature selection to reduce dimensionality</li>
-            <li>Non-linear models to capture complex relationships</li>
-            <li>Time series specific models (ARIMA, LSTM)</li>
-            <li>Spatial relationship modeling between airports</li>
-        </ul>
-    </div>
-    
     </div>
     
 </body>

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -104,12 +104,12 @@ def load_and_prepare_data(file_path='../Utils/data_by_airfield_reshaped_imputed.
     return X, y_1h, y_24h, y_120h, y_5d_avg, y_30d_avg, datetime, feature_cols
 
 def train_model(X, y, datetime):
-    logger.info("Training Random Forest model...")
+    logger.info("Training ExtraTreesRegressor model (n_estimators=100, n_jobs=2)...")
     indices = np.arange(len(X))
     X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
         X, y, indices, test_size=0.2, random_state=42
     )
-    model = RandomForestRegressor(n_estimators=200, max_depth=8, random_state=42, n_jobs=-1)
+    model = ExtraTreesRegressor(n_estimators=100, max_depth=8, random_state=42, n_jobs=2)
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
@@ -132,26 +132,65 @@ def train_model(X, y, datetime):
     return model, X_test, y_test, y_pred, datetime_test, metrics
 
 def plot_results(datetime_test, y_test, y_pred, output_dir, suffix):
-    plt.figure(figsize=(10, 6))
-    plt.plot(datetime_test, y_test, label='Actual')
-    plt.plot(datetime_test, y_pred, label='Predicted')
-    plt.title('Actual vs. Predicted Temperatures')
+    # Create DataFrame for easier filtering
+    results_df = pd.DataFrame({
+        'datetime': datetime_test,
+        'actual': y_test,
+        'predicted': y_pred
+    })
+    # Define time windows based on prediction type
+    if suffix == "0":  # 1 hour ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (1 Hour Ahead)"
+    elif suffix == "1":  # 24 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (24 Hours Ahead)"
+    elif suffix == "2":  # 120 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-15 23:59:59')
+        title = "Temperature Prediction: April 1-15, 2020 (5 Days Ahead)"
+    elif suffix == "3":  # 5-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-30 23:59:59')
+        title = "Temperature Prediction: April 2020 (5-Day Average)"
+    else:  # 30-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-05-31 23:59:59')
+        title = "Temperature Prediction: April-May 2020 (30-Day Average)"
+    period_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
+    if period_data.empty:
+        logger.warning(f"No data found for the specified period ({start_date} to {end_date}).")
+        return None
+    period_data = period_data.sort_values('datetime')
+    plt.figure(figsize=(12, 6))
+    if suffix == "4":  # 30-day average: plot actual as rolling mean
+        period_data['actual_rolling_30d'] = period_data['actual'].rolling(window=720, min_periods=1).mean()
+        plt.plot(period_data['datetime'], period_data['actual_rolling_30d'], label='Actual (30-day rolling avg)', alpha=0.7)
+        plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
+    else:
+        plt.plot(period_data['datetime'], period_data['actual'], label='Actual', alpha=0.7)
+        plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
+    plt.title(title)
     plt.xlabel('Date')
     plt.ylabel('Temperature (°C)')
     plt.legend()
-    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
     plot_path = output_dir / f'3-{suffix}-random_forest_temp_shift_results.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
     return plot_path
 
 def plot_feature_importance(feature_importance, output_dir, suffix):
-    plt.figure(figsize=(10, 6))
-    plt.barh(feature_importance['Feature'], feature_importance['Coefficient'])
-    plt.title('Feature Importance')
-    plt.xlabel('Coefficient')
-    plt.ylabel('Feature')
-    plt.grid(True)
+    plt.figure(figsize=(8, 4))
+    top_features = feature_importance.head(10)
+    plt.barh(top_features['Feature'], top_features['Abs_Coefficient'])
+    plt.title(f'Top 10 Feature Importance (3-{suffix})')
+    plt.xlabel('Absolute Coefficient Value')
+    plt.tight_layout()
     plot_path = output_dir / f'3-{suffix}-random_forest_temp_shift_feature_importance.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
@@ -413,10 +452,8 @@ def main():
         }
         logger.info("30-day average prediction analysis complete")
         # HTML and LaTeX report generation (reuse from linear_temp_shift.py)
-        from linear_temp_shift import create_html_report, create_latex_report
         html_content, output_path = create_html_report(all_results, manager)
         logger.info(f"All temperature prediction analyses complete. Results saved to {output_path}")
-        create_latex_report(all_results, output_dir)
     except Exception as e:
         logger.error(f"Error in temperature prediction analysis: {str(e)}")
         raise

@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -18,6 +18,7 @@ import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 import os
 import re
+from sklearn.inspection import permutation_importance
 
 logging.basicConfig(
     level=logging.INFO,
@@ -104,24 +105,39 @@ def load_and_prepare_data(file_path='../Utils/data_by_airfield_reshaped_imputed.
     return X, y_1h, y_24h, y_120h, y_5d_avg, y_30d_avg, datetime, feature_cols
 
 def train_model(X, y, datetime):
-    logger.info("Training Gradient Boosting model...")
+    logger.info("Training HistGradientBoostingRegressor model (fast, with early stopping)...")
     indices = np.arange(len(X))
     X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(
         X, y, indices, test_size=0.2, random_state=42
     )
-    model = GradientBoostingRegressor(n_estimators=200, max_depth=4, random_state=42)
+    model = HistGradientBoostingRegressor(
+        max_iter=100,
+        max_depth=4,
+        early_stopping=True,
+        validation_fraction=0.1,
+        random_state=42
+    )
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
+
+    # Try to get feature importances
+    if hasattr(model, "feature_importances_"):
+        importances = model.feature_importances_
+    else:
+        logger.info("Using permutation_importance for feature importances (slower)...")
+        result = permutation_importance(model, X_test, y_test, n_repeats=5, random_state=42, n_jobs=1)
+        importances = result.importances_mean
+
+    feature_importance = pd.DataFrame({
+        'Feature': X.columns,
+        'Coefficient': importances
+    })
+    feature_importance['Abs_Coefficient'] = abs(feature_importance['Coefficient'])
+    feature_importance = feature_importance.sort_values('Abs_Coefficient', ascending=False)
     mse = mean_squared_error(y_test, y_pred)
     rmse = np.sqrt(mse)
     mae = mean_absolute_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
-    feature_importance = pd.DataFrame({
-        'Feature': X.columns,
-        'Coefficient': model.feature_importances_
-    })
-    feature_importance['Abs_Coefficient'] = abs(feature_importance['Coefficient'])
-    feature_importance = feature_importance.sort_values('Abs_Coefficient', ascending=False)
     metrics = {
         'RMSE': rmse,
         'MAE': mae,
@@ -132,26 +148,65 @@ def train_model(X, y, datetime):
     return model, X_test, y_test, y_pred, datetime_test, metrics
 
 def plot_results(datetime_test, y_test, y_pred, output_dir, suffix):
-    plt.figure(figsize=(10, 6))
-    plt.plot(datetime_test, y_test, label='Actual')
-    plt.plot(datetime_test, y_pred, label='Predicted')
-    plt.title('Actual vs. Predicted Temperatures')
+    # Create DataFrame for easier filtering
+    results_df = pd.DataFrame({
+        'datetime': datetime_test,
+        'actual': y_test,
+        'predicted': y_pred
+    })
+    # Define time windows based on prediction type
+    if suffix == "0":  # 1 hour ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (1 Hour Ahead)"
+    elif suffix == "1":  # 24 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-07 23:59:59')
+        title = "Temperature Prediction: April 1-7, 2020 (24 Hours Ahead)"
+    elif suffix == "2":  # 120 hours ahead
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-15 23:59:59')
+        title = "Temperature Prediction: April 1-15, 2020 (5 Days Ahead)"
+    elif suffix == "3":  # 5-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-04-30 23:59:59')
+        title = "Temperature Prediction: April 2020 (5-Day Average)"
+    else:  # 30-day average
+        start_date = pd.Timestamp('2020-04-01')
+        end_date = pd.Timestamp('2020-05-31 23:59:59')
+        title = "Temperature Prediction: April-May 2020 (30-Day Average)"
+    period_data = results_df[(results_df['datetime'] >= start_date) & (results_df['datetime'] <= end_date)]
+    if period_data.empty:
+        logger.warning(f"No data found for the specified period ({start_date} to {end_date}).")
+        return None
+    period_data = period_data.sort_values('datetime')
+    plt.figure(figsize=(12, 6))
+    if suffix == "4":  # 30-day average: plot actual as rolling mean
+        period_data['actual_rolling_30d'] = period_data['actual'].rolling(window=720, min_periods=1).mean()
+        plt.plot(period_data['datetime'], period_data['actual_rolling_30d'], label='Actual (30-day rolling avg)', alpha=0.7)
+        plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
+    else:
+        plt.plot(period_data['datetime'], period_data['actual'], label='Actual', alpha=0.7)
+        plt.plot(period_data['datetime'], period_data['predicted'], label='Predicted', alpha=0.7)
+    plt.title(title)
     plt.xlabel('Date')
     plt.ylabel('Temperature (°C)')
     plt.legend()
-    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
     plot_path = output_dir / f'2-{suffix}-gradient_boost_temp_shift_results.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
     return plot_path
 
 def plot_feature_importance(feature_importance, output_dir, suffix):
-    plt.figure(figsize=(10, 6))
-    plt.barh(feature_importance['Feature'], feature_importance['Coefficient'])
-    plt.title('Feature Importance')
-    plt.xlabel('Coefficient')
-    plt.ylabel('Feature')
-    plt.grid(True)
+    plt.figure(figsize=(8, 4))
+    top_features = feature_importance.head(10)
+    plt.barh(top_features['Feature'], top_features['Abs_Coefficient'])
+    plt.title(f'Top 10 Feature Importance (2-{suffix})')
+    plt.xlabel('Absolute Coefficient Value')
+    plt.tight_layout()
     plot_path = output_dir / f'2-{suffix}-gradient_boost_temp_shift_feature_importance.png'
     plt.savefig(plot_path, dpi=100, bbox_inches='tight')
     plt.close()
@@ -354,7 +409,7 @@ def create_html_report(all_results, html_manager):
                 <li><strong>Train/Test Split:</strong> 80/20</li>
                 <li><strong>Random State:</strong> 42 (for reproducibility)</li>
                 <li><strong>Validation:</strong> Standard train-test split</li>
-                <li><strong>Model:</strong> Gradient Boosting Regressor with 200 estimators and max depth of 4</li>
+                <li><strong>Model:</strong> Gradient Boosting Regressor with 100 estimators and max depth of 4</li>
             </ul>
         </div>
     </div>
@@ -476,7 +531,7 @@ def create_latex_report(all_results, output_dir):
             "Train/Test Split: 80/20",
             "Random State: 42 (for reproducibility)",
             "Validation: Standard train-test split",
-            "Model Parameters: 200 estimators, max depth of 4"
+            "Model Parameters: 100 estimators, max depth of 4"
         ])
     )
     prediction_sections = []
